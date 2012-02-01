@@ -1,8 +1,17 @@
 #!/usr/bin/env python
 #
+# scoring_browser --- Simple Qt application for browsing scoring outputs in Geant4
+#
 # Copyright (C) 2012 Jan Pipek (jan.pipek@gmail.com)
-# 
+#
 # This file may be distributed without limitation.
+#
+# Requires:
+#   - numpy
+#   - PyQt4
+#
+# Tested on:
+#   Linux, Python 2.7, 3.2
 
 import sys, re, numpy
 from PyQt4 import QtGui, QtCore
