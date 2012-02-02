@@ -9,7 +9,8 @@ from PyQt4 import QtGui, QtCore
 
 from data_matrix import DataMatrix
 
-class EditTab(QtGui.QWidget):
+""" Tab displaying the file source """
+class SourceTab(QtGui.QWidget):
 	def __init__(self):
 		QtGui.QWidget.__init__( self )
 		layout =  QtGui.QVBoxLayout( self )
@@ -20,6 +21,7 @@ class EditTab(QtGui.QWidget):
 	def setText(self, text):
 		self.textEdit.setText( text )
 		
+""" Tab with the data table """
 class TableTab(QtGui.QWidget):
 	def __init__(self):
 		QtGui.QWidget.__init__( self )
@@ -30,7 +32,7 @@ class TableTab(QtGui.QWidget):
 		
 		self.toolBar = QtGui.QToolBar()
 		
-		self.relativeCheckBox = QtGui.QCheckBox( "Relative" )
+		self.relativeCheckBox = QtGui.QCheckBox( "Relative Values" )
 		self.relativeCheckBox.stateChanged.connect( self.onRelativeCheckBoxChanged )
 		
 		self.toolBar.addWidget( self.relativeCheckBox )
@@ -202,8 +204,8 @@ class ApplicationWindow(QtGui.QMainWindow):
 		self.tabs.addTab(self.tableTab, "Data Table")
 		self.tableTab.setMatrix( None )		
 		
-		self.editTab = EditTab()
-		self.tabs.addTab(self.editTab, "Source")
+		self.sourceTab = SourceTab()
+		self.tabs.addTab(self.sourceTab, "Source")
 
 		self.setCentralWidget( self.tabs )
 		self.setWindowTitle("Scoring Output Browser")
@@ -222,7 +224,8 @@ class ApplicationWindow(QtGui.QMainWindow):
 	def setMatrix(self, matrix):
 		self.matrix = matrix
 		self.tableTab.setMatrix( matrix )
-		
+	
+	""" Invoke file open dialog and read the selected file """	
 	def openFile(self):
 		fileName = QtGui.QFileDialog.getOpenFileName(self, "Select Data File")
 		self.readFile(fileName)
@@ -232,7 +235,7 @@ class ApplicationWindow(QtGui.QMainWindow):
 		try:
 			with open(fileName) as f:
 				text = f.read()
-				self.editTab.setText( text )
+				self.sourceTab.setText( text )
 				matrix = DataMatrix( text )
 			self.setStatus( "Successfully read " + fileName )
 			self.setWindowTitle("Scoring Output Browser (" + fileName + ")")
