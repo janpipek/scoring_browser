@@ -140,8 +140,8 @@ class TableTab(QtGui.QWidget):
 			return self.matrix.getSizeX()
 		else:
 			return self.matrix.getSizeY()			
-		
-	def updateCell(self, column, row):
+	
+	def getCellValue(self, column, row, relative=False):
 		if self.plane == "xy":
 			x = column
 			y = row
@@ -154,8 +154,14 @@ class TableTab(QtGui.QWidget):
 			x = column
 			y = self.z 
 			z = row
-		relativeValue = self.matrix.relativeValueAt(x, y, z)
-		value = self.matrix.valueAt(x, y, z)
+		if relative:
+			return self.matrix.relativeValueAt(x, y, z)
+		else:
+			return self.matrix.valueAt(x, y, z)
+
+	def updateCell(self, column, row):
+		relativeValue = self.getCellValue( column, row, relative=True)
+		value = self.getCellValue( column, row, relative=False)
 		cellWidget = QtGui.QTableWidgetItem()
 		if self.relative:
 			cellWidget.setText( str(relativeValue) )
@@ -188,7 +194,20 @@ class TableTab(QtGui.QWidget):
 			self.table.setColumnCount( 1 )
 			self.table.setRowCount( 1 )
 			self.table.setItem(0, 0, QtGui.QTableWidgetItem( "No data." ) )	
+			self.table.setVerticalHeaderItem( 0, QtGui.QTableWidgetItem( "-" ))
+			self.table.setHorizontalHeaderItem( 0, QtGui.QTableWidgetItem( "-" ))
+		self.table.update()
 
+		
+	def writeCSV(self, fileName):
+		if self.matrix:
+			with open(fileName, "w") as f:
+				for row in range(0, self.getRowCount() ):
+					for column in range(0, self.getColumnCount() ):
+						f.write( str( self.getCellValue( column, row, self.relative ) ) )
+						f.write(",")
+					f.write( "\n" )
+						
 		
 	def setMatrix(self, matrix):
 		self.matrix = matrix
@@ -219,6 +238,7 @@ class ApplicationWindow(QtGui.QMainWindow):
 		self.file_menu = QtGui.QMenu('&File', self)
 		self.file_menu.addAction('&Open', self.openFile, QtCore.Qt.CTRL + QtCore.Qt.Key_O)
 		self.file_menu.addAction('&Quit', self.close, QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
+		self.file_menu.addAction('E&xport Table as CSV', self.exportCSV, QtCore.Qt.CTRL + QtCore.Qt.Key_X)
 		self.menuBar().addMenu(self.file_menu)
 		
 	def setMatrix(self, matrix):
@@ -228,7 +248,13 @@ class ApplicationWindow(QtGui.QMainWindow):
 	""" Invoke file open dialog and read the selected file """	
 	def openFile(self):
 		fileName = QtGui.QFileDialog.getOpenFileName(self, "Select Data File")
-		self.readFile(fileName)
+		if fileName:
+			self.readFile(fileName)		
+
+	def exportCSV(self):
+		fileName = QtGui.QFileDialog.getSaveFileName(self, "Select CSV File")
+		if fileName:
+			self.tableTab.writeCSV( fileName )
 	
 	def readFile(self, fileName):
 		self.setStatus( "Opening " + fileName + "...")

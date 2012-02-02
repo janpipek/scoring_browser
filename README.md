@@ -1,9 +1,12 @@
-This program enables you to browse data created in Geant4
-using macro-based scoring (/score/...). It allows you to view
-a table of data sliced along any of the axes (with the possibility
-of absolute or relative value display with colourful background).
+This program enables you to browse mesh data created in Geant4
+using macro-based scoring (/score/...).
 
-The program is at the beginning of development
+Features
+--------
+* 2D tables along any axes
+* absolute vs. relative values
+* colour background (white - red - black)
+* export of 2D tables to CSV
 
 Requirements
 ------------
@@ -30,4 +33,4 @@ History
 Contact
 -------
 I'd be happy to accept feature requests, cooperation, questions, bug reports...
-Please write to jan.pipek AT gmail.com
+Please write to jan.pipek AT gmail.comýý
