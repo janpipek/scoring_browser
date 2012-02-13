@@ -16,16 +16,16 @@
 import sys
 from PyQt4 import QtGui, QtCore
 from qt4_ui import ApplicationWindow
-		
+        
 QtCore.QCoreApplication.setApplicationName( "scoring_browser" )
 QtCore.QCoreApplication.setOrganizationDomain( "vzdusne.cz" )
 QtCore.QCoreApplication.setOrganizationName( "Jan Pipek" )
-		
+        
 qApp = QtGui.QApplication(sys.argv)
 window = ApplicationWindow()
 window.show()
 
 if len( sys.argv ) == 2:
-	window.readFile( sys.argv[1] )
+    window.readFile( sys.argv[1] )
 
 sys.exit(qApp.exec_())
