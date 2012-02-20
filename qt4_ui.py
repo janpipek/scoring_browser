@@ -8,6 +8,7 @@
 from PyQt4 import QtGui, QtCore
 
 from data_matrix import DataMatrix
+import math
 
 """ Tab displaying the file source """
 class SourceTab(QtGui.QWidget):
@@ -23,12 +24,15 @@ class SourceTab(QtGui.QWidget):
         
 """ Tab with the data table """
 class TableTab(QtGui.QWidget):
-    def __init__(self):
+    def __init__(self, parent):
+        self.parent = parent
+
         QtGui.QWidget.__init__( self )
         layout =  QtGui.QVBoxLayout( self )
         self.setLayout( layout )
         
         self.table = QtGui.QTableWidget()
+        self.table.itemSelectionChanged.connect( self.updateStatistics )
         
         self.toolBar = QtGui.QToolBar()
         
@@ -167,6 +171,7 @@ class TableTab(QtGui.QWidget):
             cellWidget.setText( str(relativeValue) )
         else:
             cellWidget.setText( str(value) )    
+        cellWidget.setData( 32, value )
         color = QtGui.QColor()
         color.setHslF( 1.0, 1.0, 1.0 - relativeValue)
         cellWidget.setBackground( color )
@@ -174,12 +179,31 @@ class TableTab(QtGui.QWidget):
             cellWidget.setForeground( QtGui.QColor( 255, 255, 255) )
         # cellWidget.palette = QtGui.QPalette( color )
         self.table.setItem(row, column, cellWidget )    
-        
+
+    def updateStatistics( self ):
+        # try:
+        if True:
+            data = [ item.data(32) for item in self.table.selectedItems() ]
+            
+            n = len(data)
+            total = sum(data)
+            mean = total / n
+            sum_square = sum(( (value - mean) ** 2 for value in data ))
+
+            text = "count = {}".format(n)
+            text += ", total = {:.1f}".format(total)
+            text += ", mean = {:.1f}".format(mean)
+            if n > 1:
+                stddev = math.sqrt( sum_square / (n - 1) )
+                text += ", stdev = {:.1f}".format(stddev)
+            self.parent.setStatus(text)
+        # except TypeError:
+            # self.parent.setStatus("Invalid area.")
         
     def updateTable(self):
         if self.matrix:
             self.table.setColumnCount( self.getColumnCount() )
-            self.table.setRowCount( self.getRowCount() + 1 )
+            self.table.setRowCount( self.getRowCount())
             
             for row in range(0, self.getRowCount() ):
                 self.table.setVerticalHeaderItem( row, QtGui.QTableWidgetItem( self.verticalAxis() + " = " + str(row) ))
@@ -190,16 +214,7 @@ class TableTab(QtGui.QWidget):
                 
                 column_total = 0.0
                 for row in range(0, self.getRowCount() ):
-                    column_total += self.getCellValue( column, row )
-                    self.updateCell(column, row)
-
-                column_total_widget = QtGui.QTableWidgetItem()
-                column_total_widget.setText( str( column_total ) )
-                color = QtGui.QColor()
-                color.setHslF( 0.33, 1.0, 0.3)
-                column_total_widget.setForeground( color )
-                self.table.setItem( self.getRowCount(), column, column_total_widget )
-                    
+                    self.updateCell(column, row)                    
         else:
             self.table.setColumnCount( 1 )
             self.table.setRowCount( 1 )
@@ -229,7 +244,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self)
         self.tabs = QtGui.QTabWidget(self)
         
-        self.tableTab = TableTab()
+        self.tableTab = TableTab(self)
         self.tabs.addTab(self.tableTab, "Data Table")
         self.tableTab.setMatrix( None )     
         
@@ -250,13 +265,56 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.file_menu.addAction('&Quit', self.close, QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
         self.file_menu.addAction('E&xport Table as CSV', self.exportCSV, QtCore.Qt.CTRL + QtCore.Qt.Key_X)
         self.menuBar().addMenu(self.file_menu)
+
+        self.tools_menu = QtGui.QMenu('&Tools', self)
+        self.tools_menu.addAction('&Reduce Matrix', self.showReductionDialog, QtCore.Qt.CTRL + QtCore.Qt.Key_R)
+        self.menuBar().addMenu(self.tools_menu)
         
     def setMatrix(self, matrix):
         self.matrix = matrix
         self.tableTab.setMatrix( matrix )
+
+    def showReductionDialog( self ):
+        dialog = QtGui.QDialog( self )
+        dialog.setWindowTitle("Reduce Matrix")
+
+        layout = QtGui.QVBoxLayout()
+        dialog.setLayout( layout )
+
+        xtext = QtGui.QLineEdit()
+        ytext = QtGui.QLineEdit()
+        ztext = QtGui.QLineEdit()
+
+        layout.addWidget(QtGui.QLabel("Reduction in X Axis"))
+        layout.addWidget(xtext)
+        
+        layout.addWidget(QtGui.QLabel("Reduction in Y Axis"))
+        layout.addWidget(ytext)
+        
+        layout.addWidget(QtGui.QLabel("Reduction in Z Axis"))
+        layout.addWidget(ztext)
+
+        def onButtonClick():
+            try:
+                x = int(xtext.text())
+                y = int(ytext.text())
+                z = int(ztext.text())
+                matrix = self.matrix.reduce((x, y, z))
+                self.setMatrix( matrix )
+                dialog.close()
+            except ValueError:
+                pass
+
+        button = QtGui.QPushButton("Proceed")
+        button.clicked.connect( onButtonClick )      
+        
+        layout.addWidget(button)
+
+        dialog.show()
+        self.setMatrix( DataMatrix( self.matrix.matrix ) )
     
-    """ Invoke file open dialog and read the selected file """  
     def openFile(self):
+        """ Invoke file open dialog and read the selected file """  
         fileName = QtGui.QFileDialog.getOpenFileName(self, "Select Data File")
         if fileName:
             self.readFile(fileName)     
@@ -280,8 +338,8 @@ class ApplicationWindow(QtGui.QMainWindow):
             self.setStatus( "Error reading file." )
         self.setMatrix( matrix )
     
-    """ Display a status message """
     def setStatus(self, text):
+        """ Display a status message """
         self.statusBar().showMessage(text)
         
     def closeEvent( self, event):
@@ -290,8 +348,8 @@ class ApplicationWindow(QtGui.QMainWindow):
          settings.setValue("window/state", self.saveState())
          QtGui.QMainWindow.closeEvent(self, event)
     
-    """ Restore settings about window geometry from the saved settings"""
     def restoreSettings( self ):
+        """ Restore settings about window geometry from the saved settings"""
         try:
             settings = QtCore.QSettings()
             self.restoreGeometry(settings.value("window/geometry"))
