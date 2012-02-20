@@ -1,0 +1,2 @@
+* Reduction of matrix
+* Show sum, average and stdev on selection

@@ -9,8 +9,10 @@ import re, numpy
 
 class DataMatrix:
     def __init__(self, source=None):
-        if not source:
+        if source == None:
             pass
+        elif isinstance(source, numpy.ndarray):
+            self.matrix = source
         else:
             points = []
             linePattern = re.compile("(\d+),(\d+),(\d+),([0-9.]*)")
@@ -29,20 +31,24 @@ class DataMatrix:
             self.sizeZ = max( points, key = lambda l: l[2] )[2] + 1
             self.maxValue = max( points, key = lambda l: l[3] )[3]
             
-            if len( points ) != self.getSize():
-                # Incomplete file probably
-                # throw error
-                pass
-            
             self.matrix = numpy.ndarray( shape = (self.sizeX, self.sizeY, self.sizeZ), dtype=float )
+            if len( points ) != self.getSize():
+                raise Exception("Incomplete file")
+            
             for p in points:
                 self.matrix[p[0], p[1], p[2]] = p[3]
+    
+    @staticmethod
+    def fromFile(fileName):
+        with open(fileName) as f:
+            text = f.read()
+            return DataMatrix( text )
             
     def __add__(self, other):
-        pass
+        return DataMatrix( self.matrix + other.matrix )
         
     def __sub__(self, other):
-        pass
+        return DataMatrix( self.matrix - other.matrix )
 
     def getName(self):
         return self.name
@@ -54,16 +60,43 @@ class DataMatrix:
         return self.matrix[x, y, z] / self.maxValue
         
     def getSize(self):
-        return self.sizeX * self.sizeY + self.sizeZ
+        return self.matrix.size # sizeX * self.sizeY * self.sizeZ
         
     def getSizeX(self):
-        return self.sizeX
+        return self.matrix.shape[0]
     
     def getSizeY(self):
-        return self.sizeY
+        return self.matrix.shape[1]
     
     def getSizeZ(self):
-        return self.sizeZ
+        return self.matrix.shape[2]
         
     def getMaxValue(self):
-        return self.maxValue
+        return self.matrix.max()
+
+    def allowedReductions(self):
+        """ Tuple of possible reductions in all dimensions (i.e. factors of size along the axis) """
+        return (
+            (i for i in range(1, self.getSizeX() + 1 ) if self.getSizeX() % i == 0),
+            (i for i in range(1, self.getSizeY() + 1 ) if self.getSizeY() % i == 0),
+            (i for i in range(1, self.getSizeZ() + 1 ) if self.getSizeZ() % i == 0)
+        )
+
+    def relative(self):
+        """ New matrix with all values relative (normalized to the largest element) """
+        return DataMatrix(self.matrix / self.getMaxValue())
+
+    def reduce(self, indices = (1, 1, 1)):
+        """ New matrix with reduced dimensions (each x,y,z-element box is replaced with one element) """
+        allowed = self.allowedReductions()
+        if not all( [(indices[i] in allowed[i]) for i in range(0, 3)]):
+            raise Exception("Wrong index")
+        new_array = numpy.ndarray( shape = (self.getSizeX() / indices[0], self.getSizeY() / indices[1], self.getSizeZ() / indices[2]), dtype=float )
+        for x in range(0, new_array.shape[0]):
+            for y in range(0, new_array.shape[1]):
+                for z in range(0, new_array.shape[2]):
+                    x0 = x * indices[0]; x1 = x0 + indices[0]
+                    y0 = y * indices[1]; y1 = y0 + indices[1]
+                    z0 = z * indices[2]; z1 = z0 + indices[2]
+                    new_array[x, y, z] = ( self.matrix[ x0:x1, y0:y1, z0:z1 ].sum())
+        return DataMatrix(new_array)

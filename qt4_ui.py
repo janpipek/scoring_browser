@@ -179,16 +179,26 @@ class TableTab(QtGui.QWidget):
     def updateTable(self):
         if self.matrix:
             self.table.setColumnCount( self.getColumnCount() )
-            self.table.setRowCount( self.getRowCount() )
+            self.table.setRowCount( self.getRowCount() + 1 )
             
             for row in range(0, self.getRowCount() ):
                 self.table.setVerticalHeaderItem( row, QtGui.QTableWidgetItem( self.verticalAxis() + " = " + str(row) ))
-            
+            self.table.setVerticalHeaderItem( self.getRowCount(), QtGui.QTableWidgetItem("Total"))
+
             for column in range(0, self.getColumnCount() ):
                 self.table.setHorizontalHeaderItem( column, QtGui.QTableWidgetItem( self.horizontalAxis() + " = " + str(column) ))
                 
+                column_total = 0.0
                 for row in range(0, self.getRowCount() ):
+                    column_total += self.getCellValue( column, row )
                     self.updateCell(column, row)
+
+                column_total_widget = QtGui.QTableWidgetItem()
+                column_total_widget.setText( str( column_total ) )
+                color = QtGui.QColor()
+                color.setHslF( 0.33, 1.0, 0.3)
+                column_total_widget.setForeground( color )
+                self.table.setItem( self.getRowCount(), column, column_total_widget )
                     
         else:
             self.table.setColumnCount( 1 )
