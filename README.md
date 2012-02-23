@@ -7,6 +7,8 @@ Features
 * absolute vs. relative values
 * colour background (white - red - black)
 * export of 2D tables to CSV
+* simple statistics display for cells
+* reduction in any dimension if the data table is too detailed
 
 Requirements
 ------------
@@ -20,8 +22,8 @@ Unix features were used, so it should be multi-platform.
 Usage
 -----
 
-    python main.py
-    python main.py datafile
+    python main.pyw
+    python main.pyw datafile
 
 I believe that the DataMatrix class can be used on its own.
 

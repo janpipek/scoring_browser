@@ -236,6 +236,10 @@ class TableTab(QtGui.QWidget):
         
     def setMatrix(self, matrix):
         self.matrix = matrix
+        if matrix == None:
+            self.z = 0
+        elif self.z >= self.getPlaneCount():
+            self.z = self.getPlaneCount() - 1
         self.updateTable()
         self.updateSlider()
 
