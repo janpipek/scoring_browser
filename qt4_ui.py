@@ -8,6 +8,7 @@
 from PyQt4 import QtGui, QtCore
 
 from data_matrix import DataMatrix
+import numpy as np
 import math
 
 """ Tab displaying the file source """
@@ -70,6 +71,7 @@ class TableTab(QtGui.QWidget):
         
         
         self.slider = QtGui.QSlider( QtCore.Qt.Horizontal )
+        self.slider.setPageStep( 1 )
         self.slider.valueChanged.connect( self.onSliderValueChanged )
         
         self.toolBar.addWidget( self.slider )
@@ -91,6 +93,7 @@ class TableTab(QtGui.QWidget):
         self.z = value
         self.updateSlider()
         self.updateTable()
+        self.updateStatistics()
         
     def updateSlider(self):
         if self.matrix:
@@ -146,6 +149,10 @@ class TableTab(QtGui.QWidget):
             return self.matrix.getSizeY()           
     
     def getCellValue(self, column, row, relative=False):
+        '''Get value for the table row & column.
+
+        Takes into account table orientation.
+        '''
         if self.plane == "xy":
             x = column
             y = row
@@ -164,6 +171,7 @@ class TableTab(QtGui.QWidget):
             return self.matrix.valueAt(x, y, z)
 
     def updateCell(self, column, row):
+        '''Set value and formatting of a single cell.'''
         relativeValue = self.getCellValue( column, row, relative=True)
         value = self.getCellValue( column, row, relative=False)
         cellWidget = QtGui.QTableWidgetItem()
@@ -180,25 +188,37 @@ class TableTab(QtGui.QWidget):
         # cellWidget.palette = QtGui.QPalette( color )
         self.table.setItem(row, column, cellWidget )    
 
-    def updateStatistics( self ):
-        # try:
-        if True:
-            data = [ item.data(32) for item in self.table.selectedItems() ]
-            
-            n = len(data)
-            total = sum(data)
-            mean = total / n
-            sum_square = sum(( (value - mean) ** 2 for value in data ))
+    def formatNumber( self, number ):
+        if number > 10:
+            return "{:.1f}".format(number)
+        elif number > 1:
+            return "{:.2f}".format(number)
+        elif number > 0.1:
+            return "{:.3f}".format(number)
+        elif number > 0.01:
+            return "{:.4f}".format(number)
+        else:
+            return "{:.3e}".format(number)
 
-            text = "count = {}".format(n)
-            text += ", total = {:.1f}".format(total)
-            text += ", mean = {:.1f}".format(mean)
-            if n > 1:
-                stddev = math.sqrt( sum_square / (n - 1) )
-                text += ", stdev = {:.1f}".format(stddev)
-            self.parent.setStatus(text)
-        # except TypeError:
-            # self.parent.setStatus("Invalid area.")
+    def updateStatistics( self ):
+        '''Fill status bar with interesting statistics about selected values.'''
+        data = [ self.getCellValue(i.column(), i.row()) for i in self.table.selectedIndexes() ]
+
+        n = len(data)
+        total = sum(data)
+        text = "count = {}".format(n)
+        text += ", total = %s" % self.formatNumber(total)
+        if n > 1:
+            mean = total / n
+            maximum = max(data)
+            minimum = min(data)
+            text += ", min = %s" % self.formatNumber(minimum)
+            text += ", mean = %s" % self.formatNumber(mean)
+            text += ", max = %s" % self.formatNumber(maximum)
+            sum_square = sum(( (value - mean) ** 2 for value in data ))
+            stddev = math.sqrt( sum_square / (n - 1) )
+            text += ", stdev = %s" % self.formatNumber(stddev)
+        self.parent.setStatus(text)
         
     def updateTable(self):
         if self.matrix:

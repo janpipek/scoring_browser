@@ -35,4 +35,4 @@ History
 Contact
 -------
 I'd be happy to accept feature requests, cooperation, questions, bug reports...
-Please write to jan.pipek AT gmail.comýý
+Please write to jan.pipek AT gmail.com

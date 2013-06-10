@@ -22,6 +22,7 @@ QtCore.QCoreApplication.setOrganizationDomain( "vzdusne.cz" )
 QtCore.QCoreApplication.setOrganizationName( "Jan Pipek" )
         
 qApp = QtGui.QApplication(sys.argv)
+qApp.setWindowIcon(QtGui.QIcon('icon.png'))
 window = ApplicationWindow()
 window.show()
 

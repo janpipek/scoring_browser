@@ -15,7 +15,7 @@ class DataMatrix:
             self.matrix = source
         else:
             points = []
-            linePattern = re.compile("(\d+),(\d+),(\d+),([0-9.]*)")
+            linePattern = re.compile("(\d+),(\d+),(\d+),([0-9.e\-]*)")
             
             for line in source.splitlines():
                 match = linePattern.match( line )
