@@ -185,6 +185,8 @@ class TableTab(QtGui.QWidget):
         cellWidget.setBackground( color )
         if relativeValue > 0.33:
             cellWidget.setForeground( QtGui.QColor( 255, 255, 255) )
+        else:
+            cellWidget.setForeground( QtGui.QColor( 32, 32, 32) )
         # cellWidget.palette = QtGui.QPalette( color )
         self.table.setItem(row, column, cellWidget )    
 
