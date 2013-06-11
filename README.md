@@ -16,8 +16,8 @@ Requirements
 * PyQt4
 * numpy
 
-Program has been tested on a Linux machine. However, no specific
-Unix features were used, so it should be multi-platform.
+Program has been tested on a Linux machine and on Windows (a while ago).
+It should be platform-independent.
 
 Usage
 -----
@@ -29,7 +29,9 @@ I believe that the DataMatrix class can be used on its own.
 
 History
 -------
-01/02/2012 - I had a scoring file which I had to visualize quickly its contents but there
+11 Jun 2013 - Few changes that make the program easier to work with but no new features.
+
+01 Feb 2012 - I had a scoring file which I had to visualize quickly its contents but there
 	was no simple way how to do it. So I started with this project.
 	
 Contact

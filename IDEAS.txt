@@ -1,0 +1,6 @@
+Features
+--------
+Histogram of selected cells
+History of open files
+HDF5 export
+HTML export (as tables)
