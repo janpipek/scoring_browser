@@ -12,7 +12,7 @@ class DataMatrix:
         if source == None:
             pass
         elif isinstance(source, numpy.ndarray):
-            self.matrix = source
+            self.data_array = source
         else:
             points = []
             linePattern = re.compile("(\d+),(\d+),(\d+),([0-9.e\-]*)")
@@ -30,49 +30,58 @@ class DataMatrix:
             sizeY = max( points, key = lambda l: l[1] )[1] + 1
             sizeZ = max( points, key = lambda l: l[2] )[2] + 1
             
-            self.matrix = numpy.ndarray( shape = (sizeX, sizeY, sizeZ), dtype=float )
+            self.data_array = numpy.ndarray( shape = (sizeX, sizeY, sizeZ), dtype=float )
             if len( points ) != self.getSize():
                 raise Exception("Incomplete file")
             
             for p in points:
-                self.matrix[p[0], p[1], p[2]] = p[3]
+                self.data_array[p[0], p[1], p[2]] = p[3]
     
     @staticmethod
-    def fromFile(fileName):
-        with open(fileName) as f:
+    def from_file(file_name):
+        with open(file_name) as f:
             text = f.read()
             return DataMatrix( text )
             
     def __add__(self, other):
-        return DataMatrix( self.matrix + other.matrix )
+        return DataMatrix( self.data_array + other.data_array )
         
     def __sub__(self, other):
-        return DataMatrix( self.matrix - other.matrix )
+        return DataMatrix( self.data_array - other.data_array )
+
+    def __getitem__(self, index):
+        if not hasattr(index, "__len__"):
+            return self.data_array[index]
+        if len(index) == 4 and index[3]:
+            m = self.relative()
+        else:
+            m = self
+        return m.data_array.__getitem__(index[0:3])
 
     def getName(self):
         return self.name
     
     def valueAt(self, x, y, z):
-        return self.matrix[x, y, z]
+        return self.data_array[x, y, z]
         
     def relativeValueAt(self, x, y, z):
         return self.relative().valueAt(x, y, z)
         
     def getSize(self):
-        return self.matrix.size
+        return self.data_array.size
         
     def getSizeX(self):
-        return self.matrix.shape[0]
+        return self.data_array.shape[0]
     
     def getSizeY(self):
-        return self.matrix.shape[1]
+        return self.data_array.shape[1]
     
     def getSizeZ(self):
-        return self.matrix.shape[2]
+        return self.data_array.shape[2]
         
     def getMaxValue(self):
         if not hasattr(self, "_maxValue"):
-            self._maxValue = self.matrix.max()
+            self._maxValue = self.data_array.max()
         return self._maxValue
 
     def allowedReductions(self):
@@ -86,7 +95,7 @@ class DataMatrix:
     def relative(self):
         """ Matrix with all values relative (normalized to the largest element) """
         if not hasattr( self, "_relative"):
-            self._relative = DataMatrix(self.matrix / self.getMaxValue())
+            self._relative = DataMatrix(self.data_array / self.getMaxValue())
         return self._relative
 
     def reduce(self, indices = (1, 1, 1)):
@@ -101,5 +110,5 @@ class DataMatrix:
                     x0 = x * indices[0]; x1 = x0 + indices[0]
                     y0 = y * indices[1]; y1 = y0 + indices[1]
                     z0 = z * indices[2]; z1 = z0 + indices[2]
-                    new_array[x, y, z] = ( self.matrix[ x0:x1, y0:y1, z0:z1 ].sum())
+                    new_array[x, y, z] = ( self.data_array[ x0:x1, y0:y1, z0:z1 ].sum())
         return DataMatrix(new_array)
