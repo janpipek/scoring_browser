@@ -14,6 +14,7 @@
 #   Linux, Python 2.7, 3.2
 
 import sys
+import os
 from PyQt4 import QtGui, QtCore
 from qt4_ui import ApplicationWindow
         
@@ -22,7 +23,11 @@ QtCore.QCoreApplication.setOrganizationDomain( "vzdusne.cz" )
 QtCore.QCoreApplication.setOrganizationName( "Jan Pipek" )
         
 qApp = QtGui.QApplication(sys.argv)
-qApp.setWindowIcon(QtGui.QIcon('icon.png'))
+
+icon_dir = os.path.dirname(os.path.realpath(__file__))
+icon_file = os.path.join(icon_dir, 'icon.png')
+
+qApp.setWindowIcon(QtGui.QIcon(icon_file))
 window = ApplicationWindow()
 window.show()
 
