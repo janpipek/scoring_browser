@@ -8,7 +8,6 @@
 from PyQt4 import QtGui, QtCore
 
 from data_matrix import DataMatrix
-import numpy as np
 import math
 
 """ Tab displaying the file source """
@@ -33,12 +32,12 @@ class TableTab(QtGui.QWidget):
         self.setLayout( layout )
         
         self.table = QtGui.QTableWidget()
-        self.table.itemSelectionChanged.connect( self.updateStatistics )
+        self.table.itemSelectionChanged.connect( self.update_statistics )
         
         self.toolBar = QtGui.QToolBar()
         
         self.relativeCheckBox = QtGui.QCheckBox( "Relative Values" )
-        self.relativeCheckBox.stateChanged.connect( self.onRelativeCheckBoxChanged )
+        self.relativeCheckBox.stateChanged.connect( self.on_relative_checkbox_changed )
         
         self.toolBar.addWidget( self.relativeCheckBox )
         
@@ -58,9 +57,9 @@ class TableTab(QtGui.QWidget):
         buttonGroup.addButton( self.yzRadio )
         buttonGroup.addButton( self.xzRadio )
         
-        self.xyRadio.toggled.connect( lambda t: t and self.setPlane("xy"))
-        self.yzRadio.toggled.connect( lambda t: t and self.setPlane("yz"))
-        self.xzRadio.toggled.connect( lambda t: t and self.setPlane("xz"))
+        self.xyRadio.toggled.connect( lambda t: t and self.set_plane("xy"))
+        self.yzRadio.toggled.connect( lambda t: t and self.set_plane("yz"))
+        self.xzRadio.toggled.connect( lambda t: t and self.set_plane("xz"))
         
         self.toolBar.addWidget( self.xyRadio )
         self.toolBar.addWidget( self.yzRadio )
@@ -72,7 +71,7 @@ class TableTab(QtGui.QWidget):
         
         self.slider = QtGui.QSlider( QtCore.Qt.Horizontal )
         self.slider.setPageStep( 1 )
-        self.slider.valueChanged.connect( self.onSliderValueChanged )
+        self.slider.valueChanged.connect( self.on_slider_value_changed )
         
         self.toolBar.addWidget( self.slider )
         
@@ -87,30 +86,30 @@ class TableTab(QtGui.QWidget):
         self.z = 0
         self.relative = False
         self.matrix = None
-        self.setPlane( "xy" )       
+        self.set_plane( "xy" )       
         
-    def onSliderValueChanged(self, value):
+    def on_slider_value_changed(self, value):
         self.z = value
-        self.updateSlider()
-        self.updateTable()
-        self.updateStatistics()
+        self.update_slider()
+        self.update_table()
+        self.update_statistics()
         
-    def updateSlider(self):
+    def update_slider(self):
         if self.matrix:
-            self.slider.setMaximum( self.getPlaneCount() - 1)
+            self.slider.setMaximum( self.plane_count - 1)
             self.zValueLabel.setText( self.axis + " = " + str( self.z ) )
         else:
             self.slider.setMaximum( 0 )
             self.zValueLabel.setText( self.axis + " = " + str( 0 ) )
         
-    def onRelativeCheckBoxChanged(self, state ):
+    def on_relative_checkbox_changed(self, state ):
         if state == QtCore.Qt.Checked:
             self.relative = True
         else:
             self.relative = False
-        self.updateTable()
+        self.update_table()
         
-    def setPlane(self, plane):
+    def set_plane(self, plane):
         self.plane = plane
         # self.z = 0
         if self.plane == "xy":
@@ -119,34 +118,39 @@ class TableTab(QtGui.QWidget):
             self.axis = "x"
         else:
             self.axis = "y"
-        self.updateSlider()
-        self.updateTable()
-            
-    def horizontalAxis(self):
+        self.update_slider()
+        self.update_table()
+    
+    @property
+    def horizontal_axis(self):
         return self.plane[0]
     
-    def verticalAxis(self):
+    @property
+    def vertical_axis(self):
         return self.plane[1]
         
-    def getRowCount(self):
+    @property
+    def row_count(self):
         if self.plane == "xy":
-            return self.matrix.getSizeY()
+            return self.matrix.size_y
         else:
-            return self.matrix.getSizeZ()
+            return self.matrix.size_z
         
-    def getColumnCount(self):
+    @property
+    def column_count(self):
         if self.plane == "yz":
-            return self.matrix.getSizeY()
+            return self.matrix.size_y
         else:
-            return self.matrix.getSizeX()
-            
-    def getPlaneCount(self):
+            return self.matrix.size_x
+           
+    @property 
+    def plane_count(self):
         if self.plane == "xy":
-            return self.matrix.getSizeZ()
+            return self.matrix.size_z
         elif self.plane == "yz":
-            return self.matrix.getSizeX()
+            return self.matrix.size_x
         else:
-            return self.matrix.getSizeY()           
+            return self.matrix.size_y           
     
     def getCellValue(self, column, row, relative=False):
         '''Get value for the table row & column.
@@ -166,11 +170,11 @@ class TableTab(QtGui.QWidget):
             y = self.z 
             z = row
         if relative:
-            return self.matrix.relativeValueAt(x, y, z)
+            return self.matrix.relative_value_at(x, y, z)
         else:
-            return self.matrix.valueAt(x, y, z)
+            return self.matrix.value_at(x, y, z)
 
-    def updateCell(self, column, row):
+    def update_cell(self, column, row):
         '''Set value and formatting of a single cell.'''
         relativeValue = self.getCellValue( column, row, relative=True)
         value = self.getCellValue( column, row, relative=False)
@@ -190,7 +194,7 @@ class TableTab(QtGui.QWidget):
         # cellWidget.palette = QtGui.QPalette( color )
         self.table.setItem(row, column, cellWidget )    
 
-    def formatNumber( self, number ):
+    def format_number( self, number ):
         if number > 10:
             return "{:.1f}".format(number)
         elif number > 1:
@@ -202,41 +206,39 @@ class TableTab(QtGui.QWidget):
         else:
             return "{:.3e}".format(number)
 
-    def updateStatistics( self ):
+    def update_statistics( self ):
         '''Fill status bar with interesting statistics about selected values.'''
         data = [ self.getCellValue(i.column(), i.row()) for i in self.table.selectedIndexes() ]
 
         n = len(data)
         total = sum(data)
         text = "count = {}".format(n)
-        text += ", total = %s" % self.formatNumber(total)
+        text += ", total = %s" % self.format_number(total)
         if n > 1:
             mean = total / n
             maximum = max(data)
             minimum = min(data)
-            text += ", min = %s" % self.formatNumber(minimum)
-            text += ", mean = %s" % self.formatNumber(mean)
-            text += ", max = %s" % self.formatNumber(maximum)
+            text += ", min = %s" % self.format_number(minimum)
+            text += ", mean = %s" % self.format_number(mean)
+            text += ", max = %s" % self.format_number(maximum)
             sum_square = sum(( (value - mean) ** 2 for value in data ))
             stddev = math.sqrt( sum_square / (n - 1) )
-            text += ", stdev = %s" % self.formatNumber(stddev)
-        self.parent.setStatus(text)
+            text += ", stdev = %s" % self.format_number(stddev)
+        self.parent.set_status(text)
         
-    def updateTable(self):
+    def update_table(self):
         if self.matrix:
-            self.table.setColumnCount( self.getColumnCount() )
-            self.table.setRowCount( self.getRowCount())
+            self.table.setColumnCount( self.column_count )
+            self.table.setRowCount( self.row_count)
             
-            for row in range(0, self.getRowCount() ):
-                self.table.setVerticalHeaderItem( row, QtGui.QTableWidgetItem( self.verticalAxis() + " = " + str(row) ))
-            self.table.setVerticalHeaderItem( self.getRowCount(), QtGui.QTableWidgetItem("Total"))
+            for row in range(0, self.row_count ):
+                self.table.setVerticalHeaderItem( row, QtGui.QTableWidgetItem( self.vertical_axis + " = " + str(row) ))
+            self.table.setVerticalHeaderItem( self.row_count, QtGui.QTableWidgetItem("Total"))
 
-            for column in range(0, self.getColumnCount() ):
-                self.table.setHorizontalHeaderItem( column, QtGui.QTableWidgetItem( self.horizontalAxis() + " = " + str(column) ))
-                
-                column_total = 0.0
-                for row in range(0, self.getRowCount() ):
-                    self.updateCell(column, row)                    
+            for column in range(0, self.column_count ):
+                self.table.setHorizontalHeaderItem( column, QtGui.QTableWidgetItem( self.horizontal_axis + " = " + str(column) ))
+                for row in range(0, self.row_count ):
+                    self.update_cell(column, row)                    
         else:
             self.table.setColumnCount( 1 )
             self.table.setRowCount( 1 )
@@ -246,24 +248,24 @@ class TableTab(QtGui.QWidget):
         self.table.update()
 
         
-    def writeCSV(self, fileName):
+    def write_csv(self, fileName):
         if self.matrix:
             with open(fileName, "w") as f:
-                for row in range(0, self.getRowCount() ):
-                    for column in range(0, self.getColumnCount() ):
+                for row in range(0, self.row_count ):
+                    for column in range(0, self.column_count ):
                         f.write( str( self.getCellValue( column, row, self.relative ) ) )
                         f.write(",")
                     f.write( "\n" )
                         
         
-    def setMatrix(self, matrix):
+    def set_matrix(self, matrix):
         self.matrix = matrix
         if matrix == None:
             self.z = 0
-        elif self.z >= self.getPlaneCount():
-            self.z = self.getPlaneCount() - 1
-        self.updateTable()
-        self.updateSlider()
+        elif self.z >= self.plane_count:
+            self.z = self.plane_count - 1
+        self.update_table()
+        self.update_slider()
 
 class ApplicationWindow(QtGui.QMainWindow):
     def __init__(self):
@@ -272,7 +274,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         
         self.tableTab = TableTab(self)
         self.tabs.addTab(self.tableTab, "Data Table")
-        self.tableTab.setMatrix( None )     
+        self.tableTab.set_matrix( None )     
         
         self.sourceTab = SourceTab()
         self.tabs.addTab(self.sourceTab, "Source")
@@ -280,27 +282,27 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.setCentralWidget( self.tabs )
         self.setWindowTitle("Scoring Output Browser")
         
-        self.buildMenu()
+        self.build_menu()
         
-        self.setStatus("Ready")
-        self.restoreSettings()
+        self.set_status("Ready")
+        self.restore_settings()
         
-    def buildMenu(self):
+    def build_menu(self):
         self.file_menu = QtGui.QMenu('&File', self)
-        self.file_menu.addAction('&Open', self.openFile, QtCore.Qt.CTRL + QtCore.Qt.Key_O)
+        self.file_menu.addAction('&Open', self.open_file, QtCore.Qt.CTRL + QtCore.Qt.Key_O)
         self.file_menu.addAction('&Quit', self.close, QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
-        self.file_menu.addAction('E&xport Table as CSV', self.exportCSV, QtCore.Qt.CTRL + QtCore.Qt.Key_X)
+        self.file_menu.addAction('E&xport Table as CSV', self.export_csv, QtCore.Qt.CTRL + QtCore.Qt.Key_X)
         self.menuBar().addMenu(self.file_menu)
 
         self.tools_menu = QtGui.QMenu('&Tools', self)
-        self.tools_menu.addAction('&Reduce Matrix', self.showReductionDialog, QtCore.Qt.CTRL + QtCore.Qt.Key_R)
+        self.tools_menu.addAction('&Reduce Matrix', self.show_reduction_dialog, QtCore.Qt.CTRL + QtCore.Qt.Key_R)
         self.menuBar().addMenu(self.tools_menu)
         
-    def setMatrix(self, matrix):
+    def set_matrix(self, matrix):
         self.matrix = matrix
-        self.tableTab.setMatrix( matrix )
+        self.tableTab.set_matrix( matrix )
 
-    def showReductionDialog( self ):
+    def show_reduction_dialog( self ):
         dialog = QtGui.QDialog( self )
         dialog.setWindowTitle("Reduce Matrix")
 
@@ -326,7 +328,7 @@ class ApplicationWindow(QtGui.QMainWindow):
                 y = int(ytext.text())
                 z = int(ztext.text())
                 matrix = self.matrix.reduce((x, y, z))
-                self.setMatrix( matrix )
+                self.set_matrix( matrix )
                 dialog.close()
             except ValueError:
                 pass
@@ -337,34 +339,34 @@ class ApplicationWindow(QtGui.QMainWindow):
         layout.addWidget(button)
 
         dialog.show()
-        self.setMatrix( DataMatrix( self.matrix.matrix ) )
+        self.set_matrix( DataMatrix( self.matrix.matrix ) )
     
-    def openFile(self):
+    def open_file(self):
         """ Invoke file open dialog and read the selected file """  
         fileName = QtGui.QFileDialog.getOpenFileName(self, "Select Data File")
         if fileName:
-            self.readFile(fileName)     
+            self.read_file(fileName)     
 
-    def exportCSV(self):
+    def export_csv(self):
         fileName = QtGui.QFileDialog.getSaveFileName(self, "Select CSV File")
         if fileName:
-            self.tableTab.writeCSV( fileName )
+            self.tableTab.write_csv( fileName )
     
-    def readFile(self, fileName):
-        self.setStatus( "Opening " + fileName + "...")
-        try:
-            with open(fileName) as f:
-                text = f.read()
-                self.sourceTab.setText( text )
-                matrix = DataMatrix( text )
-            self.setStatus( "Successfully read " + fileName )
-            self.setWindowTitle("Scoring Output Browser (" + fileName + ")")
-        except:
-            matrix = None           
-            self.setStatus( "Error reading file." )
-        self.setMatrix( matrix )
+    def read_file(self, fileName):
+        self.set_status( "Opening " + fileName + "...")
+    #try:
+        with open(fileName) as f:
+            text = f.read()
+            self.sourceTab.setText( text )
+            matrix = DataMatrix( text )
+        self.set_status( "Successfully read " + fileName )
+        self.setWindowTitle("Scoring Output Browser (" + fileName + ")")
+    #except:
+        # matrix = None           
+        # self.set_status( "Error reading file." )
+        self.set_matrix( matrix )
     
-    def setStatus(self, text):
+    def set_status(self, text):
         """ Display a status message """
         self.statusBar().showMessage(text)
         
@@ -374,7 +376,7 @@ class ApplicationWindow(QtGui.QMainWindow):
          settings.setValue("window/state", self.saveState())
          QtGui.QMainWindow.closeEvent(self, event)
     
-    def restoreSettings( self ):
+    def restore_settings( self ):
         """ Restore settings about window geometry from the saved settings"""
         try:
             settings = QtCore.QSettings()

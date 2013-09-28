@@ -31,7 +31,7 @@ class DataMatrix:
             sizeZ = max( points, key = lambda l: l[2] )[2] + 1
             
             self.data_array = numpy.ndarray( shape = (sizeX, sizeY, sizeZ), dtype=float )
-            if len( points ) != self.getSize():
+            if len( points ) != self.size:
                 raise Exception("Incomplete file")
             
             for p in points:
@@ -57,53 +57,55 @@ class DataMatrix:
         else:
             m = self
         return m.data_array.__getitem__(index[0:3])
-
-    def getName(self):
-        return self.name
     
-    def valueAt(self, x, y, z):
+    def value_at(self, x, y, z):
         return self.data_array[x, y, z]
         
-    def relativeValueAt(self, x, y, z):
-        return self.relative().valueAt(x, y, z)
+    def relative_value_at(self, x, y, z):
+        return self.relative().value_at(x, y, z)
         
-    def getSize(self):
+    @property
+    def size(self):
         return self.data_array.size
-        
-    def getSizeX(self):
+     
+    @property   
+    def size_x(self):
         return self.data_array.shape[0]
     
-    def getSizeY(self):
+    @property
+    def size_y(self):
         return self.data_array.shape[1]
     
-    def getSizeZ(self):
+    @property
+    def size_z(self):
         return self.data_array.shape[2]
-        
-    def getMaxValue(self):
+      
+    @property
+    def max_value(self):
         if not hasattr(self, "_maxValue"):
             self._maxValue = self.data_array.max()
         return self._maxValue
 
-    def allowedReductions(self):
+    def allowed_reductions(self):
         """ Tuple of possible reductions in all dimensions (i.e. factors of size along the axis) """
         return (
-            (i for i in range(1, self.getSizeX() + 1 ) if self.getSizeX() % i == 0),
-            (i for i in range(1, self.getSizeY() + 1 ) if self.getSizeY() % i == 0),
-            (i for i in range(1, self.getSizeZ() + 1 ) if self.getSizeZ() % i == 0)
+            (i for i in range(1, self.size_x + 1 ) if self.size_x % i == 0),
+            (i for i in range(1, self.size_y + 1 ) if self.size_y % i == 0),
+            (i for i in range(1, self.size_z + 1 ) if self.size_z % i == 0)
         )
 
     def relative(self):
         """ Matrix with all values relative (normalized to the largest element) """
         if not hasattr( self, "_relative"):
-            self._relative = DataMatrix(self.data_array / self.getMaxValue())
+            self._relative = DataMatrix(self.data_array / self.max_value)
         return self._relative
 
     def reduce(self, indices = (1, 1, 1)):
         """ New matrix with reduced dimensions (each x,y,z-element box is replaced with one element) """
-        allowed = self.allowedReductions()
+        allowed = self.allowed_reductions()
         if not all( [(indices[i] in allowed[i]) for i in range(0, 3)]):
             raise ValueError("Wrong index")
-        new_array = numpy.ndarray( shape = (self.getSizeX() / indices[0], self.getSizeY() / indices[1], self.getSizeZ() / indices[2]), dtype=float )
+        new_array = numpy.ndarray( shape = (self.size_x / indices[0], self.size_y / indices[1], self.size_z / indices[2]), dtype=float )
         for x in range(0, new_array.shape[0]):
             for y in range(0, new_array.shape[1]):
                 for z in range(0, new_array.shape[2]):

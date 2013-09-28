@@ -32,6 +32,6 @@ window = ApplicationWindow()
 window.show()
 
 if len( sys.argv ) == 2:
-    window.readFile( sys.argv[1] )
+    window.read_file( sys.argv[1] )
 
 sys.exit(qApp.exec_())
