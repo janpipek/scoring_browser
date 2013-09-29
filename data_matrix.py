@@ -8,6 +8,14 @@
 import re, numpy
 
 class DataMatrix:
+    """A 3D matrix with data.
+
+    Based on numpy ndarray + a few more methods.
+    It can be built from the scoring files made command-based
+    Geant4 scoring (either a string of from_file method).
+
+    It provides 
+    """
     def __init__(self, source=None):
         if source == None:
             pass
@@ -39,6 +47,7 @@ class DataMatrix:
     
     @staticmethod
     def from_file(file_name):
+        """Read the matrix from scoring file."""
         with open(file_name) as f:
             text = f.read()
             return DataMatrix( text )
@@ -50,6 +59,11 @@ class DataMatrix:
         return DataMatrix( self.data_array - other.data_array )
 
     def __getitem__(self, index):
+        """ Array indexing.
+
+        If the index is 4-elements long and the last one is "True",
+        relative value is taken.
+        """
         if not hasattr(index, "__len__"):
             return self.data_array[index]
         if len(index) == 4 and index[3]:
@@ -62,7 +76,7 @@ class DataMatrix:
         return self.data_array[x, y, z]
         
     def relative_value_at(self, x, y, z):
-        return self.relative().value_at(x, y, z)
+        return self.relative.value_at(x, y, z)
         
     @property
     def size(self):
@@ -86,22 +100,27 @@ class DataMatrix:
             self._maxValue = self.data_array.max()
         return self._maxValue
 
+    @property
+    def relative(self):
+        """ Matrix with all values relative (normalized to the largest element) """
+        if not hasattr( self, "_relative"):
+            self._relative = DataMatrix(self.data_array / self.max_value)
+        return self._relative        
+
     def allowed_reductions(self):
-        """ Tuple of possible reductions in all dimensions (i.e. factors of size along the axis) """
+        """ Tuple of possible reductions in all dimensions.
+
+        I.e. factors of size along the respective axes."""
         return (
             (i for i in range(1, self.size_x + 1 ) if self.size_x % i == 0),
             (i for i in range(1, self.size_y + 1 ) if self.size_y % i == 0),
             (i for i in range(1, self.size_z + 1 ) if self.size_z % i == 0)
         )
 
-    def relative(self):
-        """ Matrix with all values relative (normalized to the largest element) """
-        if not hasattr( self, "_relative"):
-            self._relative = DataMatrix(self.data_array / self.max_value)
-        return self._relative
+    def reduced(self, indices = (1, 1, 1)):
+        """ New matrix with reduced dimensions.
 
-    def reduce(self, indices = (1, 1, 1)):
-        """ New matrix with reduced dimensions (each x,y,z-element box is replaced with one element) """
+        Each x,y,z-element box is replaced with one element."""
         allowed = self.allowed_reductions()
         if not all( [(indices[i] in allowed[i]) for i in range(0, 3)]):
             raise ValueError("Wrong index")

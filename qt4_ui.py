@@ -77,9 +77,7 @@ class TableTab(QtGui.QWidget):
         
         self.zValueLabel = QtGui.QLabel()
         self.toolBar.addWidget( self.zValueLabel )
-        
-        # w.setLayout( vLayout)
-        
+                
         layout.addWidget( self.toolBar )
         layout.addWidget( self.table )
     
@@ -327,7 +325,7 @@ class ApplicationWindow(QtGui.QMainWindow):
                 x = int(xtext.text())
                 y = int(ytext.text())
                 z = int(ztext.text())
-                matrix = self.matrix.reduce((x, y, z))
+                matrix = self.matrix.reduced((x, y, z))
                 self.set_matrix( matrix )
                 dialog.close()
             except ValueError:
@@ -354,20 +352,20 @@ class ApplicationWindow(QtGui.QMainWindow):
     
     def read_file(self, fileName):
         self.set_status( "Opening " + fileName + "...")
-    #try:
-        with open(fileName) as f:
-            text = f.read()
-            self.sourceTab.setText( text )
-            matrix = DataMatrix( text )
-        self.set_status( "Successfully read " + fileName )
-        self.setWindowTitle("Scoring Output Browser (" + fileName + ")")
-    #except:
-        # matrix = None           
-        # self.set_status( "Error reading file." )
+        try:
+            with open(fileName) as f:
+                text = f.read()
+                self.sourceTab.setText( text )
+                matrix = DataMatrix( text )
+            self.set_status( "Successfully read " + fileName )
+            self.setWindowTitle("Scoring Output Browser (" + fileName + ")")
+        except:
+            matrix = None           
+            self.set_status( "Error reading file." )
         self.set_matrix( matrix )
     
     def set_status(self, text):
-        """ Display a status message """
+        """ Display a status message."""
         self.statusBar().showMessage(text)
         
     def closeEvent( self, event):
