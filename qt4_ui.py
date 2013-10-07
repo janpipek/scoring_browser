@@ -33,6 +33,7 @@ class TableTab(QtGui.QWidget):
         
         self.table = QtGui.QTableWidget()
         self.table.itemSelectionChanged.connect( self.update_statistics )
+        self.table.itemChanged.connect( self.on_item_changed )
         
         self.toolBar = QtGui.QToolBar()
         
@@ -106,6 +107,12 @@ class TableTab(QtGui.QWidget):
         else:
             self.relative = False
         self.update_table()
+
+    def on_item_changed(self, item):
+        column = item.column()
+        row = item.row()
+        z = self.z
+        pass
         
     def set_plane(self, plane):
         self.plane = plane

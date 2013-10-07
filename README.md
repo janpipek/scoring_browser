@@ -15,6 +15,7 @@ Requirements
 * python (2.7 or 3.2)
 * PyQt4
 * numpy
+* matplotlib (for planned plotting feature)
 
 Program has been tested on a Linux machine and on Windows (a while ago).
 It should be platform-independent.
@@ -38,3 +39,9 @@ Contact
 -------
 I'd be happy to accept feature requests, cooperation, questions, bug reports...
 Please write to jan.pipek AT gmail.com
+
+
+Links
+-----
+* https://github.com/janpipek/scoring_browser
+* http://janpipek.github.io/scoring_browser

@@ -71,6 +71,9 @@ class DataMatrix:
         else:
             m = self
         return m.data_array.__getitem__(index[0:3])
+
+    def __setitem__(self, index, value):
+        self.data_array.__setitem__(index, value)
     
     def value_at(self, x, y, z):
         return self.data_array[x, y, z]
