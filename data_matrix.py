@@ -14,7 +14,14 @@ class DataMatrix:
     It can be built from the scoring files made command-based
     Geant4 scoring (either a string of from_file method).
 
-    It provides 
+    The indexing is (mostly) forwarded to the inner numpy array.
+    
+    * DataMatrix.relative provides a copy of the matrix scaled
+    relative to the maximum value (it is stored in the matrix
+    after first requested).
+    
+    * DataMatrix.reduced returns a copy of the matrix with values summed
+    over volumes of defined size (if division is possible).
     """
     def __init__(self, source=None):
         if source == None:
@@ -67,7 +74,7 @@ class DataMatrix:
         if not hasattr(index, "__len__"):
             return self.data_array[index]
         if len(index) == 4 and index[3]:
-            m = self.relative()
+            m = self.relative
         else:
             m = self
         return m.data_array.__getitem__(index[0:3])
