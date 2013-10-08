@@ -23,7 +23,8 @@ class DataMatrix:
     * DataMatrix.reduced returns a copy of the matrix with values summed
     over volumes of defined size (if division is possible).
     """
-    def __init__(self, source=None):
+    def __init__(self, source=None, header=None):
+        self.header = ""
         if source == None:
             pass
         elif isinstance(source, numpy.ndarray):
@@ -31,6 +32,7 @@ class DataMatrix:
         else:
             points = []
             linePattern = re.compile("(\d+),(\d+),(\d+),([0-9.e\-]*)")
+            commentLinePattern = re.compile("#.*")
             
             for line in source.splitlines():
                 match = linePattern.match( line )
@@ -40,6 +42,10 @@ class DataMatrix:
                     z = int( match.group(3) )
                     val = float( match.group(4) )
                     points.append( [x, y, z, val] )
+
+                match = commentLinePattern.match( line )
+                if match:
+                    self.header += line + "\n"
                 
             sizeX = max( points, key = lambda l: l[0] )[0] + 1
             sizeY = max( points, key = lambda l: l[1] )[1] + 1
@@ -51,6 +57,8 @@ class DataMatrix:
             
             for p in points:
                 self.data_array[p[0], p[1], p[2]] = p[3]
+        if header:
+            self.header = header
     
     @staticmethod
     def from_file(file_name):
@@ -58,6 +66,11 @@ class DataMatrix:
         with open(file_name) as f:
             text = f.read()
             return DataMatrix( text )
+
+    def to_file(self, file):
+        """Write the matrix to a scoring file."""
+        file.write(self.header)
+
             
     def __add__(self, other):
         return DataMatrix( self.data_array + other.data_array )
@@ -114,7 +127,7 @@ class DataMatrix:
     def relative(self):
         """ Matrix with all values relative (normalized to the largest element) """
         if not hasattr( self, "_relative"):
-            self._relative = DataMatrix(self.data_array / self.max_value)
+            self._relative = DataMatrix(self.data_array / self.max_value, header=self.header)
         return self._relative        
 
     def allowed_reductions(self):
@@ -142,4 +155,4 @@ class DataMatrix:
                     y0 = y * indices[1]; y1 = y0 + indices[1]
                     z0 = z * indices[2]; z1 = z0 + indices[2]
                     new_array[x, y, z] = ( self.data_array[ x0:x1, y0:y1, z0:z1 ].sum())
-        return DataMatrix(new_array)
+        return DataMatrix(new_array, header=self.header)
