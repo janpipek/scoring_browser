@@ -1,7 +1,7 @@
 #
 # scoring_browser --- Simple Qt application for browsing scoring outputs in Geant4
 #
-# Copyright (C) 2012 Jan Pipek (jan.pipek@gmail.com)
+# Copyright (C) 2012-2014 Jan Pipek (jan.pipek@gmail.com)
 #
 # This file may be distributed without limitation.
 #
@@ -20,7 +20,7 @@ class DataMatrix:
     relative to the maximum value (it is stored in the matrix
     after first requested).
     
-    * DataMatrix.reduced returns a copy of the matrix with values summed
+    * DataMatrix.reduced() returns a copy of the matrix with values summed
     over volumes of defined size (if division is possible).
     """
     def __init__(self, source=None, header=None):
@@ -60,6 +60,13 @@ class DataMatrix:
         if header:
             self.header = header
     
+    def copy(self):
+        """Return a copy of the matrix.
+
+        The result will not share memory with the original matrix.
+        """
+        return DataMatrix(self.data_array.copy())
+
     @staticmethod
     def from_file(file_name):
         """Read the matrix from scoring file."""
@@ -70,6 +77,7 @@ class DataMatrix:
     def to_file(self, file):
         """Write the matrix to a scoring file."""
         file.write(self.header)
+        # TODO: Probably not finished
             
     def __add__(self, other):
         return DataMatrix( self.data_array + other.data_array )

@@ -344,7 +344,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         layout.addWidget(button)
 
         dialog.show()
-        self.set_matrix( DataMatrix( self.matrix.matrix ) )
+        self.set_matrix( self.matrix.copy() )
     
     def open_file(self):
         """ Invoke file open dialog and read the selected file """  
