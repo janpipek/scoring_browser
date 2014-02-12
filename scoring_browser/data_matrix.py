@@ -47,7 +47,7 @@ class DataMatrix:
                 if match:
                     self.header += line + "\n"
                 
-            sizeX = max( points, key = lambda l: l[0] )[0] + 1
+            sizeX = max( l[0] for l in points ) + 1 #, key = lambda l: l[0] )[0] + 1
             sizeY = max( points, key = lambda l: l[1] )[1] + 1
             sizeZ = max( points, key = lambda l: l[2] )[2] + 1
             
@@ -70,7 +70,6 @@ class DataMatrix:
     def to_file(self, file):
         """Write the matrix to a scoring file."""
         file.write(self.header)
-
             
     def __add__(self, other):
         return DataMatrix( self.data_array + other.data_array )

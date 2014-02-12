@@ -25,7 +25,7 @@ QtCore.QCoreApplication.setOrganizationName( "Jan Pipek" )
 qApp = QtGui.QApplication(sys.argv)
 
 icon_dir = os.path.dirname(os.path.realpath(__file__))
-icon_file = os.path.join(icon_dir, 'icon.png')
+icon_file = os.path.join(icon_dir, 'images/icon.png')
 
 qApp.setWindowIcon(QtGui.QIcon(icon_file))
 window = ApplicationWindow()

@@ -23,8 +23,8 @@ It should be platform-independent.
 Usage
 -----
 
-    python main.pyw
-    python main.pyw datafile
+    python scoring_browser/main.pyw
+    python scoring_browser/main.pyw test/test.dat
 
 I believe that the DataMatrix class can be used on its own.
 
