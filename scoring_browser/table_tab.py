@@ -93,8 +93,8 @@ class TableTab(SliceTab):
         
     def update_table(self):
         if self.matrix:
-            self.table.setColumnCount( self.slice.shape[0] ) #self.column_count
-            self.table.setRowCount( self.slice.shape[1]) # self.row_count)
+            self.table.setColumnCount( self.column_count ) #self.column_count # self.slice.shape[0]
+            self.table.setRowCount( self.row_count ) # self.slice.shape[1]
             
             for row in range(0, self.row_count ):
                 self.table.setVerticalHeaderItem( row, QtGui.QTableWidgetItem( self.slice.plane_name[1] + " = " + str(row) ))

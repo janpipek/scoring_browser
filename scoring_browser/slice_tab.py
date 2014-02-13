@@ -142,7 +142,7 @@ class SliceTab(QtGui.QWidget):
            
     @property 
     def plane_count(self):
-        return self.matrix.shape(self.slice.axis) 
+        return self.matrix.shape[self.slice.axis]
 
     @property
     def slice(self):
@@ -156,7 +156,7 @@ class SliceTab(QtGui.QWidget):
 
     def update_slider(self):
         if self.matrix:
-            plane_count = self.matrix.shape[self.slice.axis]
+            plane_count = self.plane_count #self.matrix.shape[self.slice.axis]
             self.sliceIndexSlider.setMaximum(plane_count - 1)
             if self.slice_index >= plane_count:
                 self.slice_index = plane_count - 1            
