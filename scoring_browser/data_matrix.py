@@ -26,7 +26,7 @@ class DataMatrix:
     def __init__(self, source=None, header=None):
         self.header = ""
         if source == None:
-            pass
+            self.data_array = None
         elif isinstance(source, numpy.ndarray):
             self.data_array = source
         else:
@@ -47,9 +47,9 @@ class DataMatrix:
                 if match:
                     self.header += line + "\n"
                 
-            sizeX = max( l[0] for l in points ) + 1 #, key = lambda l: l[0] )[0] + 1
-            sizeY = max( points, key = lambda l: l[1] )[1] + 1
-            sizeZ = max( points, key = lambda l: l[2] )[2] + 1
+            sizeX = max( l[0] for l in points ) + 1
+            sizeY = max( l[1] for l in points ) + 1
+            sizeZ = max( l[2] for l in points ) + 1
             
             self.data_array = numpy.ndarray( shape = (sizeX, sizeY, sizeZ), dtype=float )
             if len( points ) != self.size:
@@ -78,7 +78,10 @@ class DataMatrix:
         """Write the matrix to a scoring file."""
         file.write(self.header)
         # TODO: Probably not finished
-            
+          
+    def empty(self):
+        return not(self.data_array)
+
     def __add__(self, other):
         return DataMatrix( self.data_array + other.data_array )
         
@@ -111,6 +114,10 @@ class DataMatrix:
     @property
     def size(self):
         return self.data_array.size
+
+    @property
+    def shape(self):
+        return self.data_array.shape
      
     @property   
     def size_x(self):
@@ -163,3 +170,59 @@ class DataMatrix:
                     z0 = z * indices[2]; z1 = z0 + indices[2]
                     new_array[x, y, z] = ( self.data_array[ x0:x1, y0:y1, z0:z1 ].sum())
         return DataMatrix(new_array, header=self.header)
+
+class DataMatrixSlice2D(object):
+    """A 2D slice from a DataMatrix."""
+
+    AXES = ("x", "y", "z")
+    PLANES = ("yz", "xz", "xy")
+
+    def __init__(self, matrix, axis_or_plane, index):
+        self.matrix = matrix
+        if isinstance(axis_or_plane, str):
+            self.axis = self.get_axis(axis_or_plane)
+        else:
+            self.axis = axis_or_plane
+        self.index = index
+
+    @classmethod
+    def get_axis(cls, axis_or_plane):
+        if len(axis_or_plane) == 1:
+            return cls.AXES.index(axis_or_plane.lower())
+        elif len(axis_or_plane) == 2:
+            return cls.PLANES.index(axis_or_plane.lower())
+        else:
+            raise Exception("You have ")
+
+    @property
+    def axis_name(self):
+        return self.AXES[self.axis]
+
+    @property
+    def plane_name(self):
+        return self.PLANES[self.axis]
+
+    @property
+    def data(self):
+        if self.axis == 0:
+            return self.matrix[self.index,:,:]
+        elif self.axis == 1:
+            return self.matrix[:,self.index,:]
+        elif self.axis == 2:
+            return self.matrix[:,:,self.index]
+
+    @property
+    def shape(self):
+        return self.data.shape
+
+    def __getitem__(self, index):
+        """Array indexing."""
+        return self.data[index]        
+
+    def real_index(self, first, second):
+        if self.axis == 0:
+            return (self.index, first, second)
+        elif self.axis == 1:
+            return (first, self.index, second)
+        elif self.axis == 2:
+            return (first, second, self.index)

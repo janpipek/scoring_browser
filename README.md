@@ -12,7 +12,7 @@ Features
 
 Requirements
 ------------
-* python (2.7 or 3.2)
+* python (2.7+ or 3.2+)
 * PyQt4
 * numpy
 * matplotlib (for planned plotting feature)
