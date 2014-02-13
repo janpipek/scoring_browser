@@ -23,6 +23,14 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.sourceTab = SourceTab()
         self.tabs.addTab(self.sourceTab, "Source")
 
+        try:
+            # matplotlib needed
+            from chart_tab import ChartTab
+            self.chartTab = ChartTab(self)
+            self.tabs.addTab(self.chartTab, "Chart")
+        except:
+            raise
+
         self.setCentralWidget( self.tabs )
         self.setWindowTitle("Scoring Output Browser")
         
@@ -45,6 +53,8 @@ class ApplicationWindow(QtGui.QMainWindow):
     def set_matrix(self, matrix):
         self.matrix = matrix
         self.tableTab.matrix = matrix
+        if hasattr(self, "chartTab"):
+            self.chartTab.matrix = matrix
 
     def show_reduction_dialog( self ):
         dialog = QtGui.QDialog( self )

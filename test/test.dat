@@ -1,7 +1,7 @@
 # mesh name: boxMesh_1
 # primitive scorer name: eDep
 # iX, iY, iZ, value [MeV]
-0,0,0,1.
+0,0,0,0.
 0,0,1,2.
 0,0,2,2.
 0,0,3,1.
