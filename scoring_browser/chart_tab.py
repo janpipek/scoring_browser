@@ -1,7 +1,9 @@
 #
-# scoring_browser --- Simple Qt application for browsing scoring outputs in Geant4
+# scoring_browser --- Simple Qt application for browsing
+# scoring outputs in Geant4
 #
-# Copyright (C) 2012-2014 Jan Pipek (jan.pipek@gmail.com)
+# Copyright (C) 2012-2014 Jan Pipek
+# (jan.pipek@gmail.com)
 #
 # This file may be distributed without limitation.
 #
@@ -11,8 +13,9 @@ from PyQt4 import QtGui, QtCore
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D # Needed to enable 3D plotting
+from mpl_toolkits.mplot3d import Axes3D   # Needed to enable 3D plotting
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+
 
 class ChartTab(SliceTab):
     def __init__(self, parent):
@@ -23,11 +26,11 @@ class ChartTab(SliceTab):
         self.figure = plt.Figure()
         self.canvas = FigureCanvas(self.figure)
 
-        self.layout.addWidget( self.canvas )
+        self.layout.addWidget(self.canvas)
 
-        self.threeDCheckBox = QtGui.QCheckBox( "3D" ) 
+        self.threeDCheckBox = QtGui.QCheckBox("3D")
         self.toolBar.addSeparator()
-        self.toolBar.addWidget( self.threeDCheckBox )
+        self.toolBar.addWidget(self.threeDCheckBox)
 
         for signal in self.all_model_signals:
             signal.connect(self.update_chart)
@@ -50,7 +53,9 @@ class ChartTab(SliceTab):
 
     def _plot_3d(self, X, Y, Z):
         axes = self.figure.add_subplot(111, projection='3d')
-        plot = axes.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap=matplotlib.cm.coolwarm, linewidth=0, antialiased=False)
+        plot = axes.plot_surface(X, Y, Z, rstride=1, cstride=1,
+                                 cmap=matplotlib.cm.coolwarm, linewidth=0,
+                                 antialiased=False)
         self.figure.colorbar(plot, shrink=0.5)
 
         axes.set_xlabel(self.slice.plane_name[1])
@@ -68,4 +73,3 @@ class ChartTab(SliceTab):
             else:
                 self._plot_2d(X, Y, self.slice.data)
         self.canvas.draw()
-            

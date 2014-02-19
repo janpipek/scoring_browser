@@ -1,7 +1,9 @@
 #
-# scoring_browser --- Simple Qt application for browsing scoring outputs in Geant4
+# scoring_browser --- Simple Qt application for browsing
+# scoring outputs in Geant4
 #
-# Copyright (C) 2012-2014 Jan Pipek (jan.pipek@gmail.com)
+# Copyright (C) 2012-2014 Jan Pipek
+# (jan.pipek@gmail.com)
 #
 # This file may be distributed without limitation.
 #
