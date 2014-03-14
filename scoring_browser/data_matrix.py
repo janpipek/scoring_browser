@@ -110,6 +110,9 @@ class DataMatrix(object):
     def __setitem__(self, index, value):
         self.data_array.__setitem__(index, value)
 
+    def __str__(self):
+        return "DataMatrix(%d, %d, %d)" % (self.shape)
+
     def value_at(self, x, y, z):
         return self.data_array[x, y, z]
 
