@@ -77,7 +77,9 @@ class DataMatrix(object):
         """Read the matrix from scoring file."""
         with open(file_name) as f:
             text = f.read()
-            return DataMatrix(text)
+            m = DataMatrix(text)
+            m.file_name = file_name
+            return m
 
     def to_file(self, file):
         """Write the matrix to a scoring file."""
@@ -111,7 +113,11 @@ class DataMatrix(object):
         self.data_array.__setitem__(index, value)
 
     def __str__(self):
-        return "DataMatrix(%d, %d, %d)" % (self.shape)
+        s = "DataMatrix(%d, %d, %d" % self.shape
+        if hasattr(self, 'file_name') and self.file_name:
+            s += ", file_name=\'%s\'" % self.file_name
+        s += ")"
+        return s
 
     def value_at(self, x, y, z):
         return self.data_array[x, y, z]
