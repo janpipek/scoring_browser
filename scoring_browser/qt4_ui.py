@@ -46,11 +46,17 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.file_menu = QtGui.QMenu('&File', self)
         self.file_menu.addAction('&Open', self.open_file,
                                  QtCore.Qt.CTRL + QtCore.Qt.Key_O)
-        self.file_menu.addAction('&Quit', self.close,
-                                 QtCore.Qt.CTRL + QtCore.Qt.Key_Q)
-        self.file_menu.addAction('E&xport Table as CSV',
+        self.reload_action = self.file_menu.addAction('&Reload', self.reload_file,
+            QtCore.Qt.Key_F5)
+        self.reload_action.setEnabled(False)
+
+        self.csv_action = self.file_menu.addAction('E&xport Table as CSV',
                                  self.export_csv,
                                  QtCore.Qt.CTRL + QtCore.Qt.Key_X)
+        self.csv_action.setEnabled(False)
+        self.file_menu.addAction('&Quit', self.close,
+                                 QtCore.Qt.CTRL + QtCore.Qt.Key_Q)        
+
         self.menuBar().addMenu(self.file_menu)
 
         self.tools_menu = QtGui.QMenu('&Tools', self)
@@ -105,12 +111,17 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.set_matrix(self.matrix.copy())  # ???
 
     def open_file(self):
-        """ Invoke file open dialog and read the selected file """
-        file_name = QtGui.QFileDialog.getOpenFileName(self, "Select Data File")
-        if file_name:
-            self.read_file(file_name)
+        """ Invoke file open dialog and read the selected file."""
+        self.file_name = QtGui.QFileDialog.getOpenFileName(self, "Select Data File")
+        if self.file_name:
+            self.read_file(self.file_name)
+
+    def reload_file(self):
+        """ Read the same file once again."""
+        self.read_file(self.file_name)
 
     def export_csv(self):
+        """ Export current displayed table as CSV."""
         file_name = QtGui.QFileDialog.getSaveFileName(self, "Select CSV File")
         if file_name:
             self.tableTab.write_csv(file_name)
@@ -128,6 +139,8 @@ class ApplicationWindow(QtGui.QMainWindow):
             matrix = None
             self.set_status("Error reading file.")
         self.set_matrix(matrix)
+        self.reload_action.setEnabled(True)
+        self.csv_action.setEnabled(True)        
 
     def set_status(self, text):
         """ Display a status message."""
