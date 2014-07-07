@@ -118,9 +118,9 @@ class ApplicationWindow(QtGui.QMainWindow):
 
     def open_file(self):
         """ Invoke file open dialog and read the selected file."""
-        self.file_name = QtGui.QFileDialog.getOpenFileName(self, "Select Data File")
-        if self.file_name:
-            self.read_file(self.file_name)
+        file_name = QtGui.QFileDialog.getOpenFileName(self, "Select Data File")
+        if file_name:
+            self.read_file(file_name)
 
     def reload_file(self):
         """ Read the same file once again."""
@@ -139,6 +139,7 @@ class ApplicationWindow(QtGui.QMainWindow):
                 text = f.read()
                 self.sourceTab.setText(text)
                 matrix = DataMatrix(text)
+            self.file_name = file_name
             self.set_status("Successfully read " + file_name)
             self.setWindowTitle("Scoring Output Browser (" + file_name + ")")
         except:
