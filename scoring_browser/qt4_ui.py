@@ -31,6 +31,10 @@ class ApplicationWindow(QtGui.QMainWindow):
             from chart_tab import ChartTab
             self.chartTab = ChartTab(self)
             self.tabs.addTab(self.chartTab, "Chart")
+
+            from histogram_tab import HistogramTab
+            self.histogramTab = HistogramTab(self)
+            self.tabs.addTab(self.histogramTab, "Histogram")
         except:
             raise
 
@@ -70,6 +74,8 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.tableTab.matrix = matrix
         if hasattr(self, "chartTab"):
             self.chartTab.matrix = matrix
+        if hasattr(self, "histogramTab"):
+            self.histogramTab.matrix = matrix
 
     def show_reduction_dialog(self):
         dialog = QtGui.QDialog(self)
