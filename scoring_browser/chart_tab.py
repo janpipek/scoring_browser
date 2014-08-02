@@ -45,7 +45,7 @@ class ChartTab(SliceTab):
     def _plot_2d(self, X, Y, Z):
         axes = self.figure.add_subplot(111)
 
-        axes.contour(Y, X, Z)
+        axes.contour(X, Y, Z)
         axes.set_ylim(reversed(axes.get_ylim()))
 
         axes.set_xlabel(self.slice.plane_name[0])

@@ -9,7 +9,11 @@
 #
 from PyQt4 import QtGui, QtCore
 
-from data_matrix import DataMatrix, DataMatrixLoader
+from data_matrix import DataMatrix, DataMatrixLoader, HDF5_ENABLED
+
+if HDF5_ENABLED:
+    from h5_dialog import H5Dialog
+
 
 from table_tab import TableTab
 from source_tab import SourceTab
@@ -120,7 +124,14 @@ class ApplicationWindow(QtGui.QMainWindow):
         """ Invoke file open dialog and read the selected file."""
         file_name = QtGui.QFileDialog.getOpenFileName(self, "Select Data File")
         if file_name:
-            self.read_file_csv(file_name)
+            file_name = str(file_name)
+            if file_name.endswith(".h5") and HDF5_ENABLED:
+                dialog = H5Dialog(self, file_name)
+                success = dialog.exec_()
+                if success:
+                    self.read_file_hdf5(file_name, dialog.path)
+            else:
+                self.read_file_csv(file_name)
 
     def reload_file(self):
         """ Read the same file once again."""
@@ -153,11 +164,14 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.set_matrix(matrix)  # ?
         self.reload_action.setEnabled(True)
         self.csv_action.setEnabled(True)
-
         self.reload_file = lambda: self.read_file_csv(file_name)
 
-    # def read_file_hdf5(self, file_name, path):
-    #     self._reload_acti
+    def read_file_hdf5(self, file_name, path):
+        self.csv_action.setEnabled(False)
+        matrix = DataMatrixLoader.from_hdf5(file_name, path)
+        self.set_matrix(matrix)
+        self.reload_action.setEnabled(True)
+        self.reload_file = lambda: self.read_file_hdf5(file_name, path)
 
     def set_status(self, text):
         """ Display a status message."""

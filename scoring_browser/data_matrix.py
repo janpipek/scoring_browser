@@ -9,6 +9,11 @@
 #
 import re
 import numpy
+try:
+    import h5py
+    HDF5_ENABLED = True
+except:
+    HDF5_ENABLED = False
 
 
 class DataMatrix(object):
@@ -199,6 +204,14 @@ class DataMatrixLoader(object):
 
         return DataMatrix(source = data_array)      
 
+    @staticmethod
+    def from_hdf5(file_name, path):
+        if not HDF5_ENABLED:
+            raise Exception("HDF5 library not found => loading disabled.")
+        f = h5py.File(file_name)
+        print "loaded " + file_name
+        data = numpy.array(f.get(path))
+        return DataMatrix(source = data)
 
 class DataMatrixSlice2D(object):
     """A 2D slice from a DataMatrix."""
