@@ -29,39 +29,9 @@ class DataMatrix(object):
     """
     def __init__(self, source=None, header=None):
         self.header = ""
-        if source is None:
-            self.data_array = None
-        elif isinstance(source, numpy.ndarray):
+        if source is not None:
             self.data_array = source
-        else:
-            points = []
-            linePattern = re.compile("(\d+),(\d+),(\d+),([0-9.e\-]*)")
-            commentLinePattern = re.compile("#.*")
-
-            for line in source.splitlines():
-                match = linePattern.match(line)
-                if match:
-                    x = int(match.group(1))
-                    y = int(match.group(2))
-                    z = int(match.group(3))
-                    val = float(match.group(4))
-                    points.append([x, y, z, val])
-
-                match = commentLinePattern.match(line)
-                if match:
-                    self.header += line + "\n"
-
-            sizeX = max(l[0] for l in points) + 1
-            sizeY = max(l[1] for l in points) + 1
-            sizeZ = max(l[2] for l in points) + 1
-
-            self.data_array = numpy.ndarray(shape=(sizeX, sizeY, sizeZ),
-                                            dtype=float)
-            if len(points) != self.size:
-                raise Exception("Incomplete file")
-
-            for p in points:
-                self.data_array[p[0], p[1], p[2]] = p[3]
+            
         if header:
             self.header = header
 
@@ -72,28 +42,20 @@ class DataMatrix(object):
         """
         return DataMatrix(self.data_array.copy())
 
-    @staticmethod
-    def from_file(file_name):
-        """Read the matrix from scoring file."""
-        with open(file_name) as f:
-            text = f.read()
-            m = DataMatrix(text)
-            m.file_name = file_name
-            return m
-
-    def to_file(self, file):
-        """Write the matrix to a scoring file."""
-        file.write(self.header)
-        # TODO: Probably not finished
-
     def empty(self):
         return not(self.data_array)
 
     def __add__(self, other):
+        """ Add two data matrices. """
         return DataMatrix(self.data_array + other.data_array)
 
     def __sub__(self, other):
+        """ Subtract two data matrices. """
         return DataMatrix(self.data_array - other.data_array)
+
+    def __mul__(self, coefficient):
+        """ Multiply DataMatrix by a coefficient. """
+        return DataMatrix(self.data_array * coefficient)
 
     def __getitem__(self, index):
         """ Array indexing.
@@ -112,7 +74,7 @@ class DataMatrix(object):
     def __setitem__(self, index, value):
         self.data_array.__setitem__(index, value)
 
-    def __str__(self):
+    def __repr__(self):
         s = "DataMatrix(%d, %d, %d" % self.shape
         if hasattr(self, 'file_name') and self.file_name:
             s += ", file_name=\'%s\'" % self.file_name
@@ -174,7 +136,9 @@ class DataMatrix(object):
     def reduced(self, indices=(1, 1, 1)):
         """ New matrix with reduced dimensions.
 
-        Each x,y,z-element box is replaced with one element."""
+        Each x,y,z-element box is replaced with one element.
+        All data in the box are added.
+        """
         allowed = self.allowed_reductions()
         if not all([(indices[i] in allowed[i]) for i in range(0, 3)]):
             raise ValueError("Wrong index")
@@ -194,6 +158,46 @@ class DataMatrix(object):
                     new_array[x, y, z] = (
                         self.data_array[x0:x1, y0:y1, z0:z1].sum())
         return DataMatrix(new_array, header=self.header)
+
+
+class DataMatrixLoader(object):
+    @staticmethod
+    def from_csv(file_name):
+        with open(file_name) as f:
+            text = f.read()
+
+        points = []
+        linePattern = re.compile("(\d+),(\d+),(\d+),([0-9.e\-]*)")
+        commentLinePattern = re.compile("#.*")
+
+        for line in text.splitlines():
+            # Line with data
+            match = linePattern.match(line)
+            if match:
+                x = int(match.group(1))
+                y = int(match.group(2))
+                z = int(match.group(3))
+                val = float(match.group(4))
+                points.append([x, y, z, val])
+
+            # Line with comments (starting with a "#")
+            match = commentLinePattern.match(line)
+            if match:
+                pass
+
+        sizeX = max(l[0] for l in points) + 1
+        sizeY = max(l[1] for l in points) + 1
+        sizeZ = max(l[2] for l in points) + 1
+
+        data_array = numpy.ndarray(shape=(sizeX, sizeY, sizeZ),
+                                        dtype=float)
+        if len(points) != data_array.size:
+            raise Exception("Incomplete file.")
+
+        for p in points:
+            data_array[p[0], p[1], p[2]] = p[3]
+
+        return DataMatrix(source = data_array)      
 
 
 class DataMatrixSlice2D(object):

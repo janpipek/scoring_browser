@@ -9,7 +9,7 @@
 #
 from PyQt4 import QtGui, QtCore
 
-from data_matrix import DataMatrix
+from data_matrix import DataMatrix, DataMatrixLoader
 
 from table_tab import TableTab
 from source_tab import SourceTab
@@ -135,17 +135,21 @@ class ApplicationWindow(QtGui.QMainWindow):
     def read_file(self, file_name):
         self.set_status("Opening " + file_name + "...")
         try:
+            matrix = DataMatrixLoader.from_csv(file_name)
             with open(file_name) as f:
                 text = f.read()
                 self.sourceTab.setText(text)
-                matrix = DataMatrix(text)
             self.file_name = file_name
             self.set_status("Successfully read " + file_name)
             self.setWindowTitle("Scoring Output Browser (" + file_name + ")")
-        except:
+        except Exception as exc:
             matrix = None
+            msgBox = QtGui.QMessageBox()
+            msgBox.setWindowTitle("Application Error")
+            msgBox.setText(str(exc))
+            msgBox.exec_()
             self.set_status("Error reading file.")
-        self.set_matrix(matrix)
+        self.set_matrix(matrix)  # ?
         self.reload_action.setEnabled(True)
         self.csv_action.setEnabled(True)        
 

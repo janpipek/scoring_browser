@@ -7,5 +7,5 @@
 #
 # This file may be distributed without limitation.
 #
-from data_matrix import DataMatrix, DataMatrixSlice2D
+from data_matrix import DataMatrix, DataMatrixSlice2D, DataMatrixLoader
 from qt4_ui import ApplicationWindow
