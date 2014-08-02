@@ -33,6 +33,10 @@ window = ApplicationWindow()
 window.show()
 
 if len(sys.argv) == 2:
-    window.read_file(sys.argv[1])
+    if sys.argv[1].endswith("h5"):
+        window.read_file_hdf5(sys.argv[1], sys.argv[2])
+        pass
+    else:
+        window.read_file_csv(sys.argv[1])
 
 sys.exit(qApp.exec_())

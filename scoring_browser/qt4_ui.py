@@ -50,7 +50,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.file_menu = QtGui.QMenu('&File', self)
         self.file_menu.addAction('&Open', self.open_file,
                                  QtCore.Qt.CTRL + QtCore.Qt.Key_O)
-        self.reload_action = self.file_menu.addAction('&Reload', self.reload_file,
+        self.reload_action = self.file_menu.addAction('&Reload', lambda: self.reload_file(),
             QtCore.Qt.Key_F5)
         self.reload_action.setEnabled(False)
 
@@ -120,11 +120,12 @@ class ApplicationWindow(QtGui.QMainWindow):
         """ Invoke file open dialog and read the selected file."""
         file_name = QtGui.QFileDialog.getOpenFileName(self, "Select Data File")
         if file_name:
-            self.read_file(file_name)
+            self.read_file_csv(file_name)
 
     def reload_file(self):
         """ Read the same file once again."""
-        self.read_file(self.file_name)
+        raise Exception("Debile")
+        pass
 
     def export_csv(self):
         """ Export current displayed table as CSV."""
@@ -132,7 +133,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         if file_name:
             self.tableTab.write_csv(file_name)
 
-    def read_file(self, file_name):
+    def read_file_csv(self, file_name):
         self.set_status("Opening " + file_name + "...")
         try:
             matrix = DataMatrixLoader.from_csv(file_name)
@@ -151,7 +152,12 @@ class ApplicationWindow(QtGui.QMainWindow):
             self.set_status("Error reading file.")
         self.set_matrix(matrix)  # ?
         self.reload_action.setEnabled(True)
-        self.csv_action.setEnabled(True)        
+        self.csv_action.setEnabled(True)
+
+        self.reload_file = lambda: self.read_file_csv(file_name)
+
+    # def read_file_hdf5(self, file_name, path):
+    #     self._reload_acti
 
     def set_status(self, text):
         """ Display a status message."""
