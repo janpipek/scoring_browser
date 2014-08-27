@@ -32,10 +32,13 @@ qApp.setWindowIcon(QtGui.QIcon(icon_file))
 window = ApplicationWindow()
 window.show()
 
-if len(sys.argv) == 2:
+if len(sys.argv) >= 2:
     if sys.argv[1].endswith("h5"):
-        window.read_file_hdf5(sys.argv[1], sys.argv[2])
-        pass
+        if len(sys.argv) >= 3:
+            window.read_file_hdf5(sys.argv[1], sys.argv[2])
+        else:
+            print "Please, specify dataset name."
+            sys.exit(-1)
     else:
         window.read_file_csv(sys.argv[1])
 
