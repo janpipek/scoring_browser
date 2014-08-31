@@ -32,11 +32,22 @@ class ChartTab(SliceTab):
         self.toolBar.addSeparator()
         self.toolBar.addWidget(self.threeDCheckBox)
 
+        self.options = {
+            "contour_labels" : True
+        }
+
         for signal in self.all_model_signals:
             signal.connect(self.update_chart)
         self.threeDCheckBox.stateChanged.connect(self.on_3D_check_box_change)
 
+        if hasattr(parent, "options_menu"):
+            parent.options_menu.addAction('&Chart Options', self.show_options_dialog)   
+
         self.update_chart()
+
+    def show_options_dialog(self):
+        dialog = ChartOptionsDialog(self)
+        dialog.show()
 
     def on_3D_check_box_change(self, state):
         self.is_3d = (state == QtCore.Qt.Checked)
@@ -45,11 +56,16 @@ class ChartTab(SliceTab):
     def _plot_2d(self, X, Y, Z):
         axes = self.figure.add_subplot(111)
 
-        axes.contour(X, Y, Z)
+        contours = self.options.get("contours", 5)
+
+        cs = axes.contour(X, Y, Z, contours)
         axes.set_ylim(reversed(axes.get_ylim()))
 
         axes.set_xlabel(self.slice.plane_name[0])
         axes.set_ylabel(self.slice.plane_name[1])
+
+        if self.options.get("contour_labels"):
+            axes.clabel(cs, fontsize=9, inline=1)
 
     def _plot_3d(self, X, Y, Z):
         axes = self.figure.add_subplot(111, projection='3d')
@@ -73,3 +89,67 @@ class ChartTab(SliceTab):
             else:
                 self._plot_2d(X, Y, self.slice.data)
         self.canvas.draw()
+
+class ChartOptionsDialog(QtGui.QDialog):
+    def __init__(self, parent):
+        def onSaveClicked():
+            parent.options["contours"] = [float(s) for s in contours_text.text().split(" ")]
+            # print parent.options
+            parent.update_chart()
+            self.close()
+
+        super(ChartOptionsDialog, self).__init__(parent)
+        self.setWindowTitle("Chart Options")
+        layout = QtGui.QVBoxLayout()
+        self.setLayout(layout)        
+
+        # Contours
+        contours_text = QtGui.QLineEdit()
+        if 'contours' in parent.options:
+            contours_text.setText(" ".join((str(contour) for contour in parent.options["contours"])))
+
+        layout.addWidget(QtGui.QLabel("Contours (space-separated)"))
+        layout.addWidget(contours_text)
+
+        button = QtGui.QPushButton("Save")
+        button.clicked.connect(onSaveClicked)
+        layout.addWidget(button)
+
+
+        # dialog = QtGui.QDialog(self)
+        # dialog.setWindowTitle("Reduce Matrix")
+
+        # layout = QtGui.QVBoxLayout()
+        # dialog.setLayout(layout)
+
+        # xtext = QtGui.QLineEdit()
+        # ytext = QtGui.QLineEdit()
+        # ztext = QtGui.QLineEdit()
+
+        # layout.addWidget(QtGui.QLabel("Reduction in X Axis"))
+        # layout.addWidget(xtext)
+
+        # layout.addWidget(QtGui.QLabel("Reduction in Y Axis"))
+        # layout.addWidget(ytext)
+
+        # layout.addWidget(QtGui.QLabel("Reduction in Z Axis"))
+        # layout.addWidget(ztext)
+
+        # def onButtonClick():
+        #     try:
+        #         x = int(xtext.text())
+        #         y = int(ytext.text())
+        #         z = int(ztext.text())
+        #         matrix = self.matrix.reduced((x, y, z))
+        #         self.set_matrix(matrix)
+        #         dialog.close()
+        #     except ValueError:
+        #         pass
+
+        # button = QtGui.QPushButton("Proceed")
+        # button.clicked.connect(onButtonClick)
+
+        # layout.addWidget(button)
+
+        # dialog.show()
+        # self.set_matrix(self.matrix.copy())  # ???

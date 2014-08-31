@@ -23,6 +23,8 @@ import net
 class ApplicationWindow(QtGui.QMainWindow):
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
+        self.build_menu()
+
         self.tabs = QtGui.QTabWidget(self)
 
         self.tableTab = TableTab(self)
@@ -46,8 +48,6 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.setCentralWidget(self.tabs)
         self.setWindowTitle("Scoring Output Browser")
 
-        self.build_menu()
-
         self.set_status("Ready")
         self.restore_settings()
 
@@ -68,11 +68,15 @@ class ApplicationWindow(QtGui.QMainWindow):
 
         self.menuBar().addMenu(self.file_menu)
 
+        self.options_menu = QtGui.QMenu("&Options", self)
+        self.menuBar().addMenu(self.options_menu)
+
         self.tools_menu = QtGui.QMenu('&Tools', self)
         self.tools_menu.addAction('&Reduce Matrix',
                                   self.show_reduction_dialog,
                                   QtCore.Qt.CTRL + QtCore.Qt.Key_R)
-        self.tools_menu.addAction('&Start Server', self.start_server)
+        self.start_server_action = self.tools_menu.addAction('&Start Server', self.start_server)
+        self.start_server_action.setCheckable(True)
         self.menuBar().addMenu(self.tools_menu)
 
     def set_matrix(self, matrix):
@@ -185,12 +189,16 @@ class ApplicationWindow(QtGui.QMainWindow):
         def handler_method(name, data):
             matrix = DataMatrix(data, name)
             self.reload_action.setEnabled(False)
+            self.set_status("New data arrived from a client.")
+            self.setWindowTitle("Scoring Output Browser: %s" % name)
             self.set_matrix(matrix)
 
         server = net.Server()
         handler = net.Handler(server, handler_method)
         server.start()
         handler.start()
+        self.start_server_action.setChecked(True)
+        self.start_server_action.setEnabled(False)
 
     def closeEvent(self, event):
         settings = QtCore.QSettings()
