@@ -115,7 +115,9 @@ class DataMatrix(object):
     @property
     def max_value(self):
         if not hasattr(self, "_maxValue"):
-            self._maxValue = self.data_array.max()
+            max_ = numpy.nanmax(self.data_array)
+            min_ = numpy.nanmin(self.data_array)
+            self._maxValue = max(numpy.abs(min_), numpy.abs(max_))
         return self._maxValue
 
     @property

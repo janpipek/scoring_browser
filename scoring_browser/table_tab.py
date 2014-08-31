@@ -9,6 +9,7 @@
 #
 from PyQt4 import QtGui
 import math
+import numpy as np
 
 from slice_tab import SliceTab
 
@@ -53,12 +54,19 @@ class TableTab(SliceTab):
             cellWidget.setText(str(value))
         cellWidget.setData(32, value)
         color = QtGui.QColor()
-        color.setHslF(1.0, 1.0, 1.0 - relativeValue)
-        cellWidget.setBackground(color)
-        if relativeValue > 0.33:
-            cellWidget.setForeground(QtGui.QColor(255, 255, 255))
+        if np.isnan(relativeValue):
+            color.setRgbF(1.0, 1.0, 0.0)
         else:
-            cellWidget.setForeground(QtGui.QColor(32, 32, 32))
+            if relativeValue > 0:
+                color.setHslF(1.0, 1.0, 1.0 - relativeValue)
+            else:
+                color.setHslF(0.66, 1.0, 1.0 - abs(relativeValue))
+            if abs(relativeValue) > 0.33:
+                cellWidget.setForeground(QtGui.QColor(255, 255, 255))
+            else:
+                cellWidget.setForeground(QtGui.QColor(32, 32, 32))
+        cellWidget.setBackground(color)
+        
         # cellWidget.palette = QtGui.QPalette(color)
         self.table.setItem(row, column, cellWidget)
 
