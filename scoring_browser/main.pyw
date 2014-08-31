@@ -42,4 +42,8 @@ if len(sys.argv) >= 2:
     else:
         window.read_file_csv(sys.argv[1])
 
+# Enable Ctrl-C in the console
+import signal
+signal.signal(signal.SIGINT, signal.SIG_DFL)
+
 sys.exit(qApp.exec_())
