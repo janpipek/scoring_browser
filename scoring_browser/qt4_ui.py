@@ -17,6 +17,7 @@ if HDF5_ENABLED:
 
 from table_tab import TableTab
 from source_tab import SourceTab
+import net
 
 
 class ApplicationWindow(QtGui.QMainWindow):
@@ -71,6 +72,7 @@ class ApplicationWindow(QtGui.QMainWindow):
         self.tools_menu.addAction('&Reduce Matrix',
                                   self.show_reduction_dialog,
                                   QtCore.Qt.CTRL + QtCore.Qt.Key_R)
+        self.tools_menu.addAction('&Start Server', self.start_server)
         self.menuBar().addMenu(self.tools_menu)
 
     def set_matrix(self, matrix):
@@ -134,9 +136,11 @@ class ApplicationWindow(QtGui.QMainWindow):
                 self.read_file_csv(file_name)
 
     def reload_file(self):
-        """ Read the same file once again."""
-        raise Exception("Debile")
-        pass
+        """ Read the same file once again.
+
+        This method will be overridden by a working one.
+        """
+        raise Exception("Reload called while impossible.")
 
     def export_csv(self):
         """ Export current displayed table as CSV."""
@@ -176,6 +180,17 @@ class ApplicationWindow(QtGui.QMainWindow):
     def set_status(self, text):
         """ Display a status message."""
         self.statusBar().showMessage(text)
+
+    def start_server(self):
+        def handler_method(name, data):
+            matrix = DataMatrix(data, name)
+            self.reload_action.setEnabled(False)
+            self.set_matrix(matrix)
+
+        server = net.Server()
+        handler = net.Handler(server, handler_method)
+        server.start()
+        handler.start()
 
     def closeEvent(self, event):
         settings = QtCore.QSettings()
