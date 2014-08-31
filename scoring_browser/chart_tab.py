@@ -58,7 +58,7 @@ class ChartTab(SliceTab):
 
         contours = self.options.get("contours", 5)
 
-        cs = axes.contour(X, Y, Z, contours)
+        cs = axes.contour(Y, X, Z, contours)
         axes.set_ylim(reversed(axes.get_ylim()))
 
         axes.set_xlabel(self.slice.plane_name[0])
@@ -80,8 +80,8 @@ class ChartTab(SliceTab):
     def update_chart(self):
         self.figure.clear()
         if self.matrix:
-            x = np.arange(self.slice.shape[0])
-            y = np.arange(self.slice.shape[1])
+            x = np.arange(self.slice.shape[1])
+            y = np.arange(self.slice.shape[0])
             X, Y = np.meshgrid(x, y)
 
             if self.is_3d:
