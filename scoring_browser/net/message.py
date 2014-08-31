@@ -16,11 +16,10 @@ class Message(object):
             data = data.reshape(a_dict["shape"])
         return Message(a_dict.get("name", "data"), data)
 
-
     def as_dict(self):
         return {
             "name" : self.name,
             "shape" : self.shape,
             "dtype" : self.dtype,
-            "data" : base64.b64encode(self.data)
+            "data" : base64.b64encode(np.ascontiguousarray(self.data))
         }
