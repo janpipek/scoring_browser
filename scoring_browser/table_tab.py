@@ -24,6 +24,11 @@ class TableTab(SliceTab):
         self.table.itemChanged.connect(self.on_item_changed)
         self.layout.addWidget(self.table)
 
+        self.options = {
+            "notation" : "normal",   # normal | scientific
+            "digits" : 5
+        }
+
         for signal in self.all_model_signals:
             signal.connect(self.update_table)
             signal.connect(self.update_statistics)
@@ -43,15 +48,24 @@ class TableTab(SliceTab):
         else:
             return self.matrix.value_at(*index)
 
+    def format_value(self, value):
+        digits = self.options.get("digits", 5)
+        if self.options.get("notation", "normal") == "scientific":
+            return ("{:." + str(digits) + "e}").format(value)
+        else:
+            return ("{:." + str(digits) + "f}").format(value)
+
     def update_cell(self, column, row):
         '''Set value and formatting of a single cell.'''
         relativeValue = self.getCellValue(column, row, relative=True)
         value = self.getCellValue(column, row, relative=False)
         cellWidget = QtGui.QTableWidgetItem()
         if self.relative:
-            cellWidget.setText(str(relativeValue))
+            cellWidget.setText(self.format_value(relativeValue))
+            cellWidget.setToolTip(str(relativeValue))
         else:
-            cellWidget.setText(str(value))
+            cellWidget.setText(self.format_value(value))
+            cellWidget.setToolTip(str(value))
         cellWidget.setData(32, value)
         color = QtGui.QColor()
         if np.isnan(relativeValue):
@@ -70,7 +84,7 @@ class TableTab(SliceTab):
         # cellWidget.palette = QtGui.QPalette(color)
         self.table.setItem(row, column, cellWidget)
 
-    def format_number(self, number):
+    def format_stats_number(self, number):
         if number > 10:
             return "{:.1f}".format(number)
         elif number > 1:
@@ -92,17 +106,17 @@ class TableTab(SliceTab):
         n = len(data)
         total = sum(data)
         text = "count = {}".format(n)
-        text += ", total = %s" % self.format_number(total)
+        text += ", total = %s" % self.format_stats_number(total)
         if n > 1:
             mean = total / n
             maximum = max(data)
             minimum = min(data)
-            text += ", min = %s" % self.format_number(minimum)
-            text += ", mean = %s" % self.format_number(mean)
-            text += ", max = %s" % self.format_number(maximum)
+            text += ", min = %s" % self.format_stats_number(minimum)
+            text += ", mean = %s" % self.format_stats_number(mean)
+            text += ", max = %s" % self.format_stats_number(maximum)
             sum_square = sum(((value - mean) ** 2 for value in data))
             stddev = math.sqrt(sum_square / (n - 1))
-            text += ", stdev = %s" % self.format_number(stddev)
+            text += ", stdev = %s" % self.format_stats_number(stddev)
         self.parent.set_status(text)
 
     def update_table(self):
