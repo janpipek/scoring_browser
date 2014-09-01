@@ -54,31 +54,46 @@ class ChartTab(SliceTab):
         self.update_chart()
 
     def _plot_2d(self, X, Y, Z):
-        axes = self.figure.add_subplot(111)
+        self.axes = self.figure.add_subplot(111)
 
         contours = self.options.get("contours", 5)
 
-        cs = axes.contour(Y, X, Z, contours)
-        axes.set_ylim(reversed(axes.get_ylim()))
+        cs = self.axes.contour(Y, X, Z, contours)
+        self.axes.set_ylim(reversed(self.axes.get_ylim()))
 
-        axes.set_xlabel(self.slice.plane_name[0])
-        axes.set_ylabel(self.slice.plane_name[1])
+        self.axes.set_xlabel(self.slice.plane_name[0])
+        self.axes.set_ylabel(self.slice.plane_name[1])
 
         if self.options.get("contour_labels"):
-            axes.clabel(cs, fontsize=9, inline=1)
+            self.axes.clabel(cs, fontsize=9, inline=1)
 
     def _plot_3d(self, X, Y, Z):
-        axes = self.figure.add_subplot(111, projection='3d')
-        plot = axes.plot_surface(X, Y, Z, rstride=1, cstride=1,
+        self.axes = self.figure.add_subplot(111, projection='3d')
+        
+        # Load stored 3D rotation
+        elev = self.options.get("3delev", 24.)
+        azim = self.options.get("3dazim", -32.)
+        self.axes.view_init(elev=elev, azim=azim)
+
+        plot = self.axes.plot_surface(X, Y, Z, rstride=1, cstride=1,
                                  cmap=matplotlib.cm.coolwarm, linewidth=0,
                                  vmin=np.nanmin(Z), vmax=np.nanmax(Z),
-                                 antialiased=False)
+                                 antialiased=True)
+        if self.options.get("3d_contours", False):
+            contours = self.options.get("contours", 5)
+            if np.any(~np.isnan(Z)):
+                cset = self.axes.contour(X, Y, Z, contours, zdir='z', offset=self.axes.get_zlim()[0], cmap=matplotlib.cm.coolwarm)
         self.figure.colorbar(plot, shrink=0.5)
 
-        axes.set_xlabel(self.slice.plane_name[1])
-        axes.set_ylabel(self.slice.plane_name[0])
+        self.axes.set_xlabel(self.slice.plane_name[1])
+        self.axes.set_ylabel(self.slice.plane_name[0])
 
     def update_chart(self):
+        # Keep 3D rotation
+        if hasattr(self, "axes") and hasattr(self.axes, "elev"):
+            self.options["3delev"] = self.axes.elev
+            self.options["3dazim"] = self.axes.azim
+
         self.figure.clear()
         if self.matrix:
             x = np.arange(self.slice.shape[1])
