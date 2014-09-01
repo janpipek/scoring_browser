@@ -71,6 +71,7 @@ class ChartTab(SliceTab):
         axes = self.figure.add_subplot(111, projection='3d')
         plot = axes.plot_surface(X, Y, Z, rstride=1, cstride=1,
                                  cmap=matplotlib.cm.coolwarm, linewidth=0,
+                                 vmin=np.nanmin(Z), vmax=np.nanmax(Z),
                                  antialiased=False)
         self.figure.colorbar(plot, shrink=0.5)
 
