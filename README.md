@@ -33,6 +33,8 @@ I believe that the DataMatrix class can be used on its own.
 
 History
 -------
+2015 - The project is planned to be replaced by https://github.com/janpipek/boadata which is a more general tool.
+
 03 Aug 2014 - Reading from HDF5 as output by https://github.com/janpipek/geant4-hdf5-tools
 
 July 2014 - Histogramming
@@ -47,8 +49,3 @@ Contact
 I'd be happy to accept feature requests, cooperation, questions, bug reports...
 Please write to jan.pipek AT gmail.com
 
-
-Links
------
-* https://github.com/janpipek/scoring_browser
-* http://janpipek.github.io/scoring_browser
